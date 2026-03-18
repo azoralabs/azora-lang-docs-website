@@ -5,7 +5,7 @@
 <h1 align="center">Azora Language Docs Website</h1>
 
 <p align="center">
-  The official website for <a href="https://docs.azoralang.org">The Azora Language Docs</a>, auto generated documentation of the standard library of the <a href="https://azoralang.org">Azora</a> programming language.
+  The official website for <a href="https://docs.azoralang.org">The Azora Language Docs</a>, auto generated documentation of the standard library of the <a href="https://azoralang.org">Azora Programming Language</a>. 
 </p>
 
 <p align="center">
@@ -26,8 +26,8 @@
 ## Development
 
 ```bash
-git clone https://github.com/azora-tech/azora-lang-book-website.git
-cd azora-lang-book-website
+git clone https://github.com/azora-tech/azora-lang-docs-website.git
+cd azora-lang-docs-website
 npm install
 npm run dev
 ```
