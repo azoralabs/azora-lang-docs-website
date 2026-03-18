@@ -1,0 +1,3953 @@
+{
+  "generated": "2026-03-08T18:02:34.358Z",
+  "modules": [
+    {
+      "name": "Async",
+      "package": "std.concurrency.async",
+      "file": "Concurrency/Async.az",
+      "category": "concurrency",
+      "stability": "experimental",
+      "since": null,
+      "fileDoc": {
+        "summary": "Async utility patterns.",
+        "description": "Provides higher-level concurrency patterns built on top of the language's coroutine primitives: timeout, retry, and parallel execution.",
+        "tags": {
+          "param": [],
+          "return": null,
+          "since": "0.0.1",
+          "throws": [],
+          "file": "Async"
+        }
+      },
+      "declarations": [
+        {
+          "kind": "task",
+          "name": "timeout",
+          "signature": "task timeout<T>(ms: T, action: () -> Unit): Bool",
+          "doc": {
+            "summary": "Runs an action with a timeout.",
+            "description": "Executes the action and checks if it completed within the specified duration. Uses cooperative scheduling via suspend.",
+            "tags": {
+              "param": [
+                {
+                  "name": "ms",
+                  "description": "The timeout in milliseconds."
+                },
+                {
+                  "name": "action",
+                  "description": "The function to execute."
+                }
+              ],
+              "return": "true if the action completed, false otherwise.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "fin",
+          "name": "handle",
+          "signature": "fin handle = async { action(); completed = true }",
+          "doc": null,
+          "parentScope": null
+        },
+        {
+          "kind": "task",
+          "name": "retry",
+          "signature": "task retry<T>(attempts: T, delayMs: T, action: () -> Bool): Bool",
+          "doc": {
+            "summary": "Retries an action up to the specified number of attempts.",
+            "description": "After each failed attempt, waits for the specified delay before retrying.",
+            "tags": {
+              "param": [
+                {
+                  "name": "attempts",
+                  "description": "The maximum number of attempts."
+                },
+                {
+                  "name": "delayMs",
+                  "description": "The delay between attempts in milliseconds."
+                },
+                {
+                  "name": "action",
+                  "description": "The function to execute. Should return true on success."
+                }
+              ],
+              "return": "true if any attempt succeeded, false if all attempts failed.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "task",
+          "name": "parallel",
+          "signature": "task parallel<T>(tag: T, a: () -> Unit, b: () -> Unit)",
+          "doc": {
+            "summary": "Runs two actions concurrently and waits for both to complete.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "tag",
+                  "description": "Unused type tag (pass 0)."
+                },
+                {
+                  "name": "a",
+                  "description": "The first action to execute."
+                },
+                {
+                  "name": "b",
+                  "description": "The second action to execute."
+                }
+              ],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "fin",
+          "name": "t1",
+          "signature": "fin t1 = async { a() }",
+          "doc": null,
+          "parentScope": null
+        },
+        {
+          "kind": "fin",
+          "name": "t2",
+          "signature": "fin t2 = async { b() }",
+          "doc": null,
+          "parentScope": null
+        },
+        {
+          "kind": "task",
+          "name": "race",
+          "signature": "task race<T>(tag: T, a: () -> Unit, b: () -> Unit)",
+          "doc": {
+            "summary": "Runs two actions concurrently, completing when the first finishes.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "tag",
+                  "description": "Unused type tag (pass 0)."
+                },
+                {
+                  "name": "a",
+                  "description": "The first action to execute."
+                },
+                {
+                  "name": "b",
+                  "description": "The second action to execute."
+                }
+              ],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "fin",
+          "name": "t1",
+          "signature": "fin t1 = async { a(); done = true }",
+          "doc": null,
+          "parentScope": null
+        },
+        {
+          "kind": "fin",
+          "name": "t2",
+          "signature": "fin t2 = async { b(); done = true }",
+          "doc": null,
+          "parentScope": null
+        }
+      ]
+    },
+    {
+      "name": "Channel",
+      "package": "std.channel",
+      "file": "Parallelism/Channel.az",
+      "category": "parallelism",
+      "stability": "experimental",
+      "since": null,
+      "fileDoc": {
+        "summary": "Thread-safe message channel.",
+        "description": "Provides a FIFO message queue for communication between threads, with send, receive, and close operations protected by a mutex.",
+        "tags": {
+          "param": [],
+          "return": null,
+          "since": "0.0.1",
+          "throws": [],
+          "file": "Channel"
+        }
+      },
+      "declarations": [
+        {
+          "kind": "pack",
+          "name": "Channel",
+          "signature": "pack Channel<T>",
+          "doc": {
+            "summary": "A thread-safe FIFO message channel for inter-thread communication.",
+            "description": "Channel provides a synchronized queue that allows threads to send and receive messages safely.",
+            "tags": {
+              "param": [
+                {
+                  "name": "T",
+                  "description": "The type of messages in this channel."
+                }
+              ],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "prop",
+          "name": "length",
+          "signature": "prop length: Int = queue.length",
+          "doc": {
+            "summary": "The number of messages currently in the channel.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": null,
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "prop",
+          "name": "isEmpty",
+          "signature": "prop isEmpty: Bool = queue.isEmpty",
+          "doc": {
+            "summary": "Whether the channel has no messages.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": null,
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "prop",
+          "name": "isClosed",
+          "signature": "prop isClosed: Bool = closed",
+          "doc": {
+            "summary": "Whether the channel has been closed.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": null,
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "send",
+          "signature": "func send(value: T)",
+          "doc": {
+            "summary": "Sends a message to the channel.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "value",
+                  "description": "The message to send."
+                }
+              ],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [
+                "AssertionError if the channel is closed."
+              ],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "receive",
+          "signature": "func receive(): T",
+          "doc": {
+            "summary": "Receives and removes the next message from the channel.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": "The next message.",
+              "since": "0.0.1",
+              "throws": [
+                "AssertionError if the channel is empty."
+              ],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "tryReceive",
+          "signature": "func tryReceive(default: T): T",
+          "doc": {
+            "summary": "Attempts to receive a message without blocking.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "default",
+                  "description": "The value to return if the channel is empty."
+                }
+              ],
+              "return": "The next message, or the default value if empty.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "close",
+          "signature": "func close()",
+          "doc": {
+            "summary": "Closes the channel, preventing further sends.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        }
+      ]
+    },
+    {
+      "name": "Convert",
+      "package": "std.io.convert",
+      "file": "IO/Convert.az",
+      "category": "io",
+      "stability": "experimental",
+      "since": null,
+      "fileDoc": {
+        "summary": "Type conversion and formatting utilities.",
+        "description": "Provides functions for converting primitive types to strings and string formatting operations like padding, repeating, and joining.",
+        "tags": {
+          "param": [],
+          "return": null,
+          "since": "0.0.1",
+          "throws": [],
+          "file": "Convert"
+        }
+      },
+      "declarations": [
+        {
+          "kind": "func",
+          "name": "intToString",
+          "signature": "func intToString<T>(n: T): String",
+          "doc": {
+            "summary": "Converts an integer to its string representation.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "n",
+                  "description": "The integer to convert."
+                }
+              ],
+              "return": "The string representation.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "realToString",
+          "signature": "func realToString<T>(n: T): String",
+          "doc": {
+            "summary": "Converts a real number to its string representation.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "n",
+                  "description": "The real number to convert."
+                }
+              ],
+              "return": "The string representation.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "boolToString",
+          "signature": "func boolToString<T>(b: T): String",
+          "doc": {
+            "summary": "Converts a boolean to its string representation.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "b",
+                  "description": "The boolean to convert."
+                }
+              ],
+              "return": "\"true\" or \"false\".",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "padLeft",
+          "signature": "func padLeft<T>(s: T, count: Int, char: T): T",
+          "doc": {
+            "summary": "Pads a string on the left by prepending characters.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "s",
+                  "description": "The string to pad."
+                },
+                {
+                  "name": "count",
+                  "description": "The number of padding characters to add."
+                },
+                {
+                  "name": "char",
+                  "description": "The padding character."
+                }
+              ],
+              "return": "The padded string.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "padRight",
+          "signature": "func padRight<T>(s: T, count: Int, char: T): T",
+          "doc": {
+            "summary": "Pads a string on the right by appending characters.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "s",
+                  "description": "The string to pad."
+                },
+                {
+                  "name": "count",
+                  "description": "The number of padding characters to add."
+                },
+                {
+                  "name": "char",
+                  "description": "The padding character."
+                }
+              ],
+              "return": "The padded string.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "repeatString",
+          "signature": "func repeatString<T>(s: T, count: Int): T",
+          "doc": {
+            "summary": "Repeats a string the given number of times.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "s",
+                  "description": "The string to repeat."
+                },
+                {
+                  "name": "count",
+                  "description": "The number of repetitions."
+                }
+              ],
+              "return": "The repeated string.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "joinArray",
+          "signature": "func joinArray<T>(arr: T[], sep: T): T",
+          "doc": {
+            "summary": "Joins an array of strings with a separator.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "arr",
+                  "description": "The strings to join."
+                },
+                {
+                  "name": "sep",
+                  "description": "The separator to insert between elements."
+                }
+              ],
+              "return": "The joined string.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        }
+      ]
+    },
+    {
+      "name": "Core",
+      "package": "std.traits.core",
+      "file": "Traits/Core.az",
+      "category": "traits",
+      "stability": "experimental",
+      "since": null,
+      "fileDoc": {
+        "summary": "Core type specifications.",
+        "description": "Defines fundamental specifications for type capabilities: equality comparison, ordering, and string representation.",
+        "tags": {
+          "param": [],
+          "return": null,
+          "since": "0.0.1",
+          "throws": [],
+          "file": "Core"
+        }
+      },
+      "declarations": [
+        {
+          "kind": "spec",
+          "name": "Equatable",
+          "signature": "spec Equatable",
+          "doc": {
+            "summary": "Types that support equality comparison via == and !=.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "impl",
+          "name": "Equatable for Int",
+          "signature": "impl Equatable for Int",
+          "doc": {
+            "summary": "Int supports equality comparison.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": null,
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "impl",
+          "name": "Equatable for Real",
+          "signature": "impl Equatable for Real",
+          "doc": {
+            "summary": "Real supports equality comparison.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": null,
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "impl",
+          "name": "Equatable for String",
+          "signature": "impl Equatable for String",
+          "doc": {
+            "summary": "String supports equality comparison.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": null,
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "impl",
+          "name": "Equatable for Bool",
+          "signature": "impl Equatable for Bool",
+          "doc": {
+            "summary": "Bool supports equality comparison.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": null,
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "spec",
+          "name": "Comparable",
+          "signature": "spec Comparable",
+          "doc": {
+            "summary": "Types that support ordering via < and >.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "impl",
+          "name": "Comparable for Int",
+          "signature": "impl Comparable for Int",
+          "doc": {
+            "summary": "Int supports ordering.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": null,
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "impl",
+          "name": "Comparable for Real",
+          "signature": "impl Comparable for Real",
+          "doc": {
+            "summary": "Real supports ordering.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": null,
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "impl",
+          "name": "Comparable for String",
+          "signature": "impl Comparable for String",
+          "doc": {
+            "summary": "String supports ordering.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": null,
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "spec",
+          "name": "Displayable",
+          "signature": "spec Displayable",
+          "doc": {
+            "summary": "Types that have a string representation.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "impl",
+          "name": "Displayable for Int",
+          "signature": "impl Displayable for Int",
+          "doc": {
+            "summary": "Int has a string representation.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": null,
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "impl",
+          "name": "Displayable for Real",
+          "signature": "impl Displayable for Real",
+          "doc": {
+            "summary": "Real has a string representation.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": null,
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "impl",
+          "name": "Displayable for String",
+          "signature": "impl Displayable for String",
+          "doc": {
+            "summary": "String has a string representation.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": null,
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "impl",
+          "name": "Displayable for Bool",
+          "signature": "impl Displayable for Bool",
+          "doc": {
+            "summary": "Bool has a string representation.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": null,
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        }
+      ]
+    },
+    {
+      "name": "Coroutines",
+      "package": "std.concurrency.coroutines",
+      "file": "Concurrency/Coroutines.az",
+      "category": "concurrency",
+      "stability": "experimental",
+      "since": null,
+      "fileDoc": {
+        "summary": "Coroutine-based concurrency primitives.",
+        "description": "Provides task-based utilities for asynchronous execution, including delayed actions.",
+        "tags": {
+          "param": [],
+          "return": null,
+          "since": "0.0.1",
+          "throws": [],
+          "file": "Coroutines"
+        }
+      },
+      "declarations": [
+        {
+          "kind": "task",
+          "name": "delayed",
+          "signature": "task delayed(ms: Int, action: () -> Unit)",
+          "doc": {
+            "summary": "Executes an action after a specified delay.",
+            "description": "Suspends for the given number of milliseconds, then invokes the action.",
+            "tags": {
+              "param": [
+                {
+                  "name": "ms",
+                  "description": "The delay in milliseconds before executing the action."
+                },
+                {
+                  "name": "action",
+                  "description": "The function to execute after the delay."
+                }
+              ],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        }
+      ]
+    },
+    {
+      "name": "Extra",
+      "package": "std.math.extra",
+      "file": "Math/Extra.az",
+      "category": "math",
+      "stability": "experimental",
+      "since": null,
+      "fileDoc": {
+        "summary": "Extended mathematical functions.",
+        "description": "Provides additional math utilities including exponentiation, factorial, GCD/LCM, parity checks, and array aggregation.",
+        "tags": {
+          "param": [],
+          "return": null,
+          "since": "0.0.1",
+          "throws": [],
+          "file": "Extra"
+        }
+      },
+      "declarations": [
+        {
+          "kind": "func",
+          "name": "pow",
+          "signature": "func pow<T>(base: T, exp: Int): T",
+          "doc": {
+            "summary": "Computes exponentiation.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "base",
+                  "description": "The base value."
+                },
+                {
+                  "name": "exp",
+                  "description": "The exponent (must be non-negative)."
+                }
+              ],
+              "return": "base raised to the power of exp.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "factorial",
+          "signature": "func factorial<T>(n: T): T",
+          "doc": {
+            "summary": "Computes the factorial of n.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "n",
+                  "description": "The non-negative integer."
+                }
+              ],
+              "return": "n! (n factorial).",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "gcd",
+          "signature": "func gcd<T>(a: T, b: T): T",
+          "doc": {
+            "summary": "Computes the greatest common divisor using the Euclidean algorithm.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "a",
+                  "description": "The first integer."
+                },
+                {
+                  "name": "b",
+                  "description": "The second integer."
+                }
+              ],
+              "return": "The GCD of a and b.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "lcm",
+          "signature": "func lcm<T>(a: T, b: T): T",
+          "doc": {
+            "summary": "Computes the least common multiple.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "a",
+                  "description": "The first integer."
+                },
+                {
+                  "name": "b",
+                  "description": "The second integer."
+                }
+              ],
+              "return": "The LCM of a and b.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "isEven",
+          "signature": "func isEven<T>(n: T): Bool = n % 2 == 0",
+          "doc": {
+            "summary": "Checks if an integer is even.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "n",
+                  "description": "The integer to check."
+                }
+              ],
+              "return": "true if n is even.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "isOdd",
+          "signature": "func isOdd<T>(n: T): Bool = n % 2 != 0",
+          "doc": {
+            "summary": "Checks if an integer is odd.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "n",
+                  "description": "The integer to check."
+                }
+              ],
+              "return": "true if n is odd.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "sum",
+          "signature": "func sum<T>(arr: T[]): T",
+          "doc": {
+            "summary": "Computes the sum of an integer array.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "arr",
+                  "description": "The array to sum."
+                }
+              ],
+              "return": "The sum of all elements.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "sumReal",
+          "signature": "func sumReal<T>(arr: T[]): T",
+          "doc": {
+            "summary": "Computes the sum of a real array.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "arr",
+                  "description": "The array to sum."
+                }
+              ],
+              "return": "The sum of all elements.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "product",
+          "signature": "func product<T>(arr: T[]): T",
+          "doc": {
+            "summary": "Computes the product of an integer array.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "arr",
+                  "description": "The array to multiply."
+                }
+              ],
+              "return": "The product of all elements.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "fib",
+          "signature": "func fib<T>(n: T): T",
+          "doc": {
+            "summary": "Computes the Nth Fibonacci number (fib).",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "n",
+                  "description": "The index (0-based) of the Fibonacci number."
+                }
+              ],
+              "return": "The Nth Fibonacci number.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        }
+      ]
+    },
+    {
+      "name": "IO",
+      "package": "std.io.io",
+      "file": "IO/IO.az",
+      "category": "io",
+      "stability": "experimental",
+      "since": null,
+      "fileDoc": {
+        "summary": "Standard I/O formatting utilities.",
+        "description": "Provides common formatting constants and helper functions for text output such as separators and section headers.",
+        "tags": {
+          "param": [],
+          "return": null,
+          "since": "0.0.1",
+          "throws": [],
+          "file": "IO"
+        }
+      },
+      "declarations": [
+        {
+          "kind": "scope",
+          "name": "fmt",
+          "signature": "scope fmt",
+          "doc": {
+            "summary": "Common formatting character constants.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "children": [
+            {
+              "kind": "fin",
+              "name": "newline",
+              "signature": "fin newline = \"\\n\"",
+              "doc": {
+                "summary": "A newline character.",
+                "description": "",
+                "tags": {
+                  "param": [],
+                  "return": null,
+                  "since": null,
+                  "throws": [],
+                  "file": null
+                }
+              },
+              "parentScope": "fmt"
+            },
+            {
+              "kind": "fin",
+              "name": "tab",
+              "signature": "fin tab = \"\\t\"",
+              "doc": {
+                "summary": "A tab character.",
+                "description": "",
+                "tags": {
+                  "param": [],
+                  "return": null,
+                  "since": null,
+                  "throws": [],
+                  "file": null
+                }
+              },
+              "parentScope": "fmt"
+            },
+            {
+              "kind": "fin",
+              "name": "space",
+              "signature": "fin space = \" \"",
+              "doc": {
+                "summary": "A single space character.",
+                "description": "",
+                "tags": {
+                  "param": [],
+                  "return": null,
+                  "since": null,
+                  "throws": [],
+                  "file": null
+                }
+              },
+              "parentScope": "fmt"
+            }
+          ]
+        },
+        {
+          "kind": "func",
+          "name": "separator",
+          "signature": "func separator(char: String, length: Int): String = char * length",
+          "doc": {
+            "summary": "Creates a separator string by repeating a character.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "char",
+                  "description": "The character or string to repeat."
+                },
+                {
+                  "name": "length",
+                  "description": "The number of times to repeat it."
+                }
+              ],
+              "return": "A string of the given character repeated length times.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "header",
+          "signature": "func header(title: String, width: Int): String",
+          "doc": {
+            "summary": "Prints a formatted section header with surrounding separator lines.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "title",
+                  "description": "The header text to display."
+                },
+                {
+                  "name": "width",
+                  "description": "The width of the separator lines."
+                }
+              ],
+              "return": "The title string.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        }
+      ]
+    },
+    {
+      "name": "List",
+      "package": "std.container.list",
+      "file": "Container/List.az",
+      "category": "container",
+      "stability": "experimental",
+      "since": null,
+      "fileDoc": {
+        "summary": "Generic resizable list collection.",
+        "description": "Provides a dynamic array-backed list with support for element access, modification, search, functional operations, and slicing. Uses pointer-based storage with explicit capacity management.",
+        "tags": {
+          "param": [],
+          "return": null,
+          "since": "0.0.1",
+          "throws": [],
+          "file": "List"
+        }
+      },
+      "declarations": [
+        {
+          "kind": "pack",
+          "name": "List",
+          "signature": "pack List<T>",
+          "doc": {
+            "summary": "A generic, dynamically-sized, ordered collection of elements.",
+            "description": "List provides pointer-based array storage that grows as elements are added. Elements are accessed by zero-based integer index.",
+            "tags": {
+              "param": [
+                {
+                  "name": "T",
+                  "description": "The type of elements stored in this list."
+                }
+              ],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "prop",
+          "name": "length",
+          "signature": "prop length: Int = size",
+          "doc": {
+            "summary": "The number of elements in the list.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": null,
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "prop",
+          "name": "isEmpty",
+          "signature": "prop isEmpty: Bool = size == 0",
+          "doc": {
+            "summary": "Whether the list contains no elements.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": null,
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "prop",
+          "name": "isNotEmpty",
+          "signature": "prop isNotEmpty: Bool = size > 0",
+          "doc": {
+            "summary": "Whether the list contains at least one element.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": null,
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "grow",
+          "signature": "func grow()",
+          "doc": null,
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "get",
+          "signature": "func get(index: Int): T",
+          "doc": {
+            "summary": "Returns the element at the given index.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "index",
+                  "description": "The zero-based index of the element to retrieve."
+                }
+              ],
+              "return": "The element at the specified position.",
+              "since": "0.0.1",
+              "throws": [
+                "AssertionError if index is negative or out of bounds."
+              ],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "prop",
+          "name": "first",
+          "signature": "prop first: T",
+          "doc": {
+            "summary": "The first element in the list.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [
+                "AssertionError if the list is empty."
+              ],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "prop",
+          "name": "last",
+          "signature": "prop last: T",
+          "doc": {
+            "summary": "The last element in the list.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [
+                "AssertionError if the list is empty."
+              ],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "add",
+          "signature": "func add(element: T)",
+          "doc": {
+            "summary": "Appends an element to the end of the list.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "element",
+                  "description": "The element to add."
+                }
+              ],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "insert",
+          "signature": "func insert(index: Int, element: T)",
+          "doc": {
+            "summary": "Inserts an element at the specified index, shifting subsequent elements.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "index",
+                  "description": "The position at which to insert the element."
+                },
+                {
+                  "name": "element",
+                  "description": "The element to insert."
+                }
+              ],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [
+                "AssertionError if index is negative or greater than size."
+              ],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "set",
+          "signature": "func set(index: Int, element: T)",
+          "doc": {
+            "summary": "Replaces the element at the specified index.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "index",
+                  "description": "The zero-based index of the element to replace."
+                },
+                {
+                  "name": "element",
+                  "description": "The new element to store at the position."
+                }
+              ],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [
+                "AssertionError if index is negative or out of bounds."
+              ],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "removeAt",
+          "signature": "func removeAt(index: Int): T",
+          "doc": {
+            "summary": "Removes and returns the element at the specified index.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "index",
+                  "description": "The zero-based index of the element to remove."
+                }
+              ],
+              "return": "The removed element.",
+              "since": "0.0.1",
+              "throws": [
+                "AssertionError if index is negative or out of bounds."
+              ],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "removeFirst",
+          "signature": "func removeFirst(): T",
+          "doc": {
+            "summary": "Removes and returns the first element.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": "The removed first element.",
+              "since": "0.0.1",
+              "throws": [
+                "AssertionError if the list is empty."
+              ],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "removeLast",
+          "signature": "func removeLast(): T",
+          "doc": {
+            "summary": "Removes and returns the last element.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": "The removed last element.",
+              "since": "0.0.1",
+              "throws": [
+                "AssertionError if the list is empty."
+              ],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "clear",
+          "signature": "func clear()",
+          "doc": {
+            "summary": "Removes all elements from the list.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "contains",
+          "signature": "func contains(element: T): Bool",
+          "doc": {
+            "summary": "Checks whether the list contains the given element.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "element",
+                  "description": "The element to search for."
+                }
+              ],
+              "return": "true if the element is found, false otherwise.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "indexOf",
+          "signature": "func indexOf(element: T): Int",
+          "doc": {
+            "summary": "Returns the index of the first occurrence of the given element.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "element",
+                  "description": "The element to search for."
+                }
+              ],
+              "return": "The zero-based index, or -1 if not found.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "lastIndexOf",
+          "signature": "func lastIndexOf(element: T): Int",
+          "doc": {
+            "summary": "Returns the index of the last occurrence of the given element.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "element",
+                  "description": "The element to search for."
+                }
+              ],
+              "return": "The zero-based index, or -1 if not found.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "forEach",
+          "signature": "func forEach(action: (T) -> Unit)",
+          "doc": {
+            "summary": "Executes the given action on each element in order.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "action",
+                  "description": "The function to apply to each element."
+                }
+              ],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "map",
+          "signature": "func map(transform: (T) -> T): List<T>",
+          "doc": {
+            "summary": "Returns a new list with each element transformed by the given function.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "transform",
+                  "description": "The mapping function to apply to each element."
+                }
+              ],
+              "return": "A new list containing the transformed elements.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "filter",
+          "signature": "func filter(predicate: (T) -> Bool): List<T>",
+          "doc": {
+            "summary": "Returns a new list containing only elements that satisfy the predicate.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "predicate",
+                  "description": "The function to test each element."
+                }
+              ],
+              "return": "A new list with matching elements in their original order.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "any",
+          "signature": "func any(predicate: (T) -> Bool): Bool",
+          "doc": {
+            "summary": "Returns true if at least one element satisfies the predicate.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "predicate",
+                  "description": "The function to test each element."
+                }
+              ],
+              "return": "true if any element matches, false otherwise.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "all",
+          "signature": "func all(predicate: (T) -> Bool): Bool",
+          "doc": {
+            "summary": "Returns true if all elements satisfy the predicate.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "predicate",
+                  "description": "The function to test each element."
+                }
+              ],
+              "return": "true if every element matches, false otherwise.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "none",
+          "signature": "func none(predicate: (T) -> Bool): Bool",
+          "doc": {
+            "summary": "Returns true if no elements satisfy the predicate.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "predicate",
+                  "description": "The function to test each element."
+                }
+              ],
+              "return": "true if no element matches, false otherwise.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "count",
+          "signature": "func count(predicate: (T) -> Bool): Int",
+          "doc": {
+            "summary": "Counts the number of elements that satisfy the predicate.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "predicate",
+                  "description": "The function to test each element."
+                }
+              ],
+              "return": "The count of matching elements.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "subList",
+          "signature": "func subList(from: Int, to: Int): List<T>",
+          "doc": {
+            "summary": "Returns a new list containing elements from index `from` (inclusive) to `to` (exclusive).",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "from",
+                  "description": "The start index (inclusive)."
+                },
+                {
+                  "name": "to",
+                  "description": "The end index (exclusive)."
+                }
+              ],
+              "return": "A new list with the specified sub-range of elements.",
+              "since": "0.0.1",
+              "throws": [
+                "AssertionError if indices are out of bounds or from > to."
+              ],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "toArray",
+          "signature": "func toArray(): [T]",
+          "doc": {
+            "summary": "Copies all elements into a raw array.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": "An array containing all elements in order.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "prop",
+          "name": "reversed",
+          "signature": "prop reversed: List<T>",
+          "doc": {
+            "summary": "A new list with elements in reverse order.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": "A reversed copy of this list.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "toString",
+          "signature": "func toString(): String",
+          "doc": {
+            "summary": "Returns a string representation of the list.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": "A string in the format \"[element1, element2, ...]\".",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        }
+      ]
+    },
+    {
+      "name": "Map",
+      "package": "std.container.map",
+      "file": "Container/Map.az",
+      "category": "container",
+      "stability": "experimental",
+      "since": null,
+      "fileDoc": {
+        "summary": "Generic key-value dictionary collection.",
+        "description": "Provides an associative array backed by parallel pointer arrays, with support for insertion, lookup, removal, and functional iteration. Uses pointer-based storage with explicit capacity management.",
+        "tags": {
+          "param": [],
+          "return": null,
+          "since": "0.0.1",
+          "throws": [],
+          "file": "Map"
+        }
+      },
+      "declarations": [
+        {
+          "kind": "pack",
+          "name": "Map",
+          "signature": "pack Map<K, V>",
+          "doc": {
+            "summary": "A generic key-value dictionary using parallel pointer arrays.",
+            "description": "Map stores associations between keys and values. Keys are unique; inserting with an existing key replaces the previous value.",
+            "tags": {
+              "param": [
+                {
+                  "name": "K",
+                  "description": "The type of keys."
+                },
+                {
+                  "name": "V",
+                  "description": "The type of values."
+                }
+              ],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "prop",
+          "name": "length",
+          "signature": "prop length: Int = size",
+          "doc": {
+            "summary": "The number of key-value pairs in the map.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": null,
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "prop",
+          "name": "isEmpty",
+          "signature": "prop isEmpty: Bool = size == 0",
+          "doc": {
+            "summary": "Whether the map contains no entries.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": null,
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "prop",
+          "name": "isNotEmpty",
+          "signature": "prop isNotEmpty: Bool = size > 0",
+          "doc": {
+            "summary": "Whether the map contains at least one entry.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": null,
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "put",
+          "signature": "func put(key: K, value: V)",
+          "doc": {
+            "summary": "Associates the given key with the given value.",
+            "description": "If the key already exists, its value is replaced.",
+            "tags": {
+              "param": [
+                {
+                  "name": "key",
+                  "description": "The key to insert or update."
+                },
+                {
+                  "name": "value",
+                  "description": "The value to associate with the key."
+                }
+              ],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "get",
+          "signature": "func get(key: K): V",
+          "doc": {
+            "summary": "Returns the value associated with the given key.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "key",
+                  "description": "The key to look up."
+                }
+              ],
+              "return": "The associated value.",
+              "since": "0.0.1",
+              "throws": [
+                "AssertionError if the key is not found."
+              ],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "getOrDefault",
+          "signature": "func getOrDefault(key: K, default: V): V",
+          "doc": {
+            "summary": "Returns the value for the given key, or a default if not found.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "key",
+                  "description": "The key to look up."
+                },
+                {
+                  "name": "default",
+                  "description": "The fallback value."
+                }
+              ],
+              "return": "The associated value or the default.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "remove",
+          "signature": "func remove(key: K): V",
+          "doc": {
+            "summary": "Removes the entry with the given key and returns its value.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "key",
+                  "description": "The key to remove."
+                }
+              ],
+              "return": "The removed value.",
+              "since": "0.0.1",
+              "throws": [
+                "AssertionError if the key is not found."
+              ],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "containsKey",
+          "signature": "func containsKey(key: K): Bool",
+          "doc": {
+            "summary": "Checks whether the map contains the given key.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "key",
+                  "description": "The key to search for."
+                }
+              ],
+              "return": "true if the key exists, false otherwise.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "containsValue",
+          "signature": "func containsValue(value: V): Bool",
+          "doc": {
+            "summary": "Checks whether the map contains the given value.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "value",
+                  "description": "The value to search for."
+                }
+              ],
+              "return": "true if the value exists, false otherwise.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "clear",
+          "signature": "func clear()",
+          "doc": {
+            "summary": "Removes all entries from the map.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "forEach",
+          "signature": "func forEach(action: (K, V) -> Unit)",
+          "doc": {
+            "summary": "Executes the given action on each key-value pair.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "action",
+                  "description": "The function to apply to each key and value."
+                }
+              ],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "keys",
+          "signature": "func keys(): [K]",
+          "doc": {
+            "summary": "Returns an array of all keys.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": "An array containing all keys in insertion order.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "values",
+          "signature": "func values(): [V]",
+          "doc": {
+            "summary": "Returns an array of all values.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": "An array containing all values in insertion order.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "toString",
+          "signature": "func toString(): String",
+          "doc": {
+            "summary": "Returns a string representation of the map.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": "A string in the format \"{key1: value1, key2: value2}\".",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        }
+      ]
+    },
+    {
+      "name": "Math",
+      "package": "std.math.math",
+      "file": "Math/Math.az",
+      "category": "math",
+      "stability": "experimental",
+      "since": null,
+      "fileDoc": {
+        "summary": "Core mathematical constants and utility functions.",
+        "description": "Provides fundamental constants (PI, E, TAU) and common numeric operations such as absolute value, clamping, and linear interpolation.",
+        "tags": {
+          "param": [],
+          "return": null,
+          "since": "0.0.1",
+          "throws": [],
+          "file": "Math"
+        }
+      },
+      "declarations": [
+        {
+          "kind": "scope",
+          "name": "math",
+          "signature": "scope math",
+          "doc": null,
+          "children": [
+            {
+              "kind": "fin",
+              "name": "PI",
+              "signature": "fin PI: Real = 3.14159265358979",
+              "doc": {
+                "summary": "The ratio of a circle's circumference to its diameter.",
+                "description": "",
+                "tags": {
+                  "param": [],
+                  "return": null,
+                  "since": "0.0.1",
+                  "throws": [],
+                  "file": null
+                }
+              },
+              "parentScope": "math"
+            },
+            {
+              "kind": "fin",
+              "name": "E",
+              "signature": "fin E: Real = 2.71828182845905",
+              "doc": {
+                "summary": "Euler's number, the base of natural logarithms.",
+                "description": "",
+                "tags": {
+                  "param": [],
+                  "return": null,
+                  "since": "0.0.1",
+                  "throws": [],
+                  "file": null
+                }
+              },
+              "parentScope": "math"
+            },
+            {
+              "kind": "fin",
+              "name": "TAU",
+              "signature": "fin TAU: Real = 6.28318530717959",
+              "doc": {
+                "summary": "The ratio of a circle's circumference to its radius (2 * PI).",
+                "description": "",
+                "tags": {
+                  "param": [],
+                  "return": null,
+                  "since": "0.0.1",
+                  "throws": [],
+                  "file": null
+                }
+              },
+              "parentScope": "math"
+            }
+          ]
+        },
+        {
+          "kind": "func",
+          "name": "abs",
+          "signature": "func abs<T>(x: T): T = if x < 0",
+          "doc": {
+            "summary": "Returns the absolute value of the given number.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "x",
+                  "description": "The value to take the absolute value of."
+                }
+              ],
+              "return": "The non-negative magnitude of x.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "min",
+          "signature": "func min<T>(a: T, b: T): T = if a < b",
+          "doc": {
+            "summary": "Returns the smaller of two values.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "a",
+                  "description": "The first value to compare."
+                },
+                {
+                  "name": "b",
+                  "description": "The second value to compare."
+                }
+              ],
+              "return": "The lesser of a and b.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "max",
+          "signature": "func max<T>(a: T, b: T): T = if a > b",
+          "doc": {
+            "summary": "Returns the larger of two values.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "a",
+                  "description": "The first value to compare."
+                },
+                {
+                  "name": "b",
+                  "description": "The second value to compare."
+                }
+              ],
+              "return": "The greater of a and b.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "clamp",
+          "signature": "func clamp<T>(x: T, lo: T, hi: T): T = max<T>(lo, min<T>(x, hi))",
+          "doc": {
+            "summary": "Constrains a value within the given range.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "x",
+                  "description": "The value to clamp."
+                },
+                {
+                  "name": "lo",
+                  "description": "The lower bound of the range."
+                },
+                {
+                  "name": "hi",
+                  "description": "The upper bound of the range."
+                }
+              ],
+              "return": "x if it falls within [lo, hi], otherwise the nearest bound.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "sign",
+          "signature": "func sign<T>(x: T): Int = if x > 0",
+          "doc": {
+            "summary": "Returns the sign of a number as an integer.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "x",
+                  "description": "The value to determine the sign of."
+                }
+              ],
+              "return": "1 if x is positive, -1 if negative, 0 if zero.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "lerp",
+          "signature": "func lerp(a: Real, b: Real, t: Real): Real = a + (b - a) * t",
+          "doc": {
+            "summary": "Performs linear interpolation between two values.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "a",
+                  "description": "The start value."
+                },
+                {
+                  "name": "b",
+                  "description": "The end value."
+                },
+                {
+                  "name": "t",
+                  "description": "The interpolation factor, typically in [0.0, 1.0]."
+                }
+              ],
+              "return": "The interpolated value a + (b - a) * t.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        }
+      ]
+    },
+    {
+      "name": "Queue",
+      "package": "std.container.queue",
+      "file": "Container/Queue.az",
+      "category": "container",
+      "stability": "experimental",
+      "since": null,
+      "fileDoc": {
+        "summary": "Generic FIFO queue collection.",
+        "description": "Provides a first-in-first-out queue backed by a pointer array, with enqueue, dequeue, and peek operations. Uses pointer-based storage with explicit capacity management.",
+        "tags": {
+          "param": [],
+          "return": null,
+          "since": "0.0.1",
+          "throws": [],
+          "file": "Queue"
+        }
+      },
+      "declarations": [
+        {
+          "kind": "pack",
+          "name": "Queue",
+          "signature": "pack Queue<T>",
+          "doc": {
+            "summary": "A generic first-in-first-out (FIFO) queue.",
+            "description": "Queue provides pointer-backed storage where elements are added at the back and removed from the front.",
+            "tags": {
+              "param": [
+                {
+                  "name": "T",
+                  "description": "The type of elements stored in this queue."
+                }
+              ],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "prop",
+          "name": "length",
+          "signature": "prop length: Int = size",
+          "doc": {
+            "summary": "The number of elements in the queue.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": null,
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "prop",
+          "name": "isEmpty",
+          "signature": "prop isEmpty: Bool = size == 0",
+          "doc": {
+            "summary": "Whether the queue contains no elements.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": null,
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "prop",
+          "name": "isNotEmpty",
+          "signature": "prop isNotEmpty: Bool = size > 0",
+          "doc": {
+            "summary": "Whether the queue contains at least one element.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": null,
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "growQueue",
+          "signature": "func growQueue()",
+          "doc": null,
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "enqueue",
+          "signature": "func enqueue(element: T)",
+          "doc": {
+            "summary": "Adds an element to the back of the queue.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "element",
+                  "description": "The element to enqueue."
+                }
+              ],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "dequeue",
+          "signature": "func dequeue(): T",
+          "doc": {
+            "summary": "Removes and returns the front element of the queue.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": "The removed front element.",
+              "since": "0.0.1",
+              "throws": [
+                "AssertionError if the queue is empty."
+              ],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "peek",
+          "signature": "func peek(): T",
+          "doc": {
+            "summary": "Returns the front element without removing it.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": "The front element.",
+              "since": "0.0.1",
+              "throws": [
+                "AssertionError if the queue is empty."
+              ],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "clear",
+          "signature": "func clear()",
+          "doc": {
+            "summary": "Removes all elements from the queue.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "toString",
+          "signature": "func toString(): String",
+          "doc": {
+            "summary": "Returns a string representation of the queue.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": "A string in the format \"[front, ..., back]\".",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        }
+      ]
+    },
+    {
+      "name": "Search",
+      "package": "std.algorithm.search",
+      "file": "Algorithm/Search.az",
+      "category": "algorithm",
+      "stability": "experimental",
+      "since": null,
+      "fileDoc": {
+        "summary": "Search functions for arrays.",
+        "description": "Provides linear search, binary search, min/max finding, and occurrence counting for arrays.",
+        "tags": {
+          "param": [],
+          "return": null,
+          "since": "0.0.1",
+          "throws": [],
+          "file": "Search"
+        }
+      },
+      "declarations": [
+        {
+          "kind": "func",
+          "name": "linearSearch",
+          "signature": "func linearSearch<T>(arr: T[], target: T): Int",
+          "doc": {
+            "summary": "Performs a linear search for a target in an array.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "arr",
+                  "description": "The array to search."
+                },
+                {
+                  "name": "target",
+                  "description": "The element to find."
+                }
+              ],
+              "return": "The index of the first occurrence, or -1 if not found.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "binarySearch",
+          "signature": "func binarySearch<T>(arr: T[], target: T): Int",
+          "doc": {
+            "summary": "Performs a binary search on a sorted array.",
+            "description": "The array must be sorted in ascending order for correct results.",
+            "tags": {
+              "param": [
+                {
+                  "name": "arr",
+                  "description": "The sorted array to search."
+                },
+                {
+                  "name": "target",
+                  "description": "The element to find."
+                }
+              ],
+              "return": "The index of the target, or -1 if not found.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "minOf",
+          "signature": "func minOf<T>(arr: T[]): T",
+          "doc": {
+            "summary": "Returns the minimum element in an array.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "arr",
+                  "description": "The array to search (must be non-empty)."
+                }
+              ],
+              "return": "The smallest element.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "maxOf",
+          "signature": "func maxOf<T>(arr: T[]): T",
+          "doc": {
+            "summary": "Returns the maximum element in an array.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "arr",
+                  "description": "The array to search (must be non-empty)."
+                }
+              ],
+              "return": "The largest element.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "count",
+          "signature": "func count<T>(arr: T[], target: T): Int",
+          "doc": {
+            "summary": "Counts the occurrences of a target in an array.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "arr",
+                  "description": "The array to search."
+                },
+                {
+                  "name": "target",
+                  "description": "The element to count."
+                }
+              ],
+              "return": "The number of times target appears in the array.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        }
+      ]
+    },
+    {
+      "name": "Set",
+      "package": "std.container.set",
+      "file": "Container/Set.az",
+      "category": "container",
+      "stability": "experimental",
+      "since": null,
+      "fileDoc": {
+        "summary": "Generic unique-element collection.",
+        "description": "Provides a pointer-backed set that maintains uniqueness of elements, with support for standard set operations like union, intersection, and difference. Uses pointer-based storage with explicit capacity management.",
+        "tags": {
+          "param": [],
+          "return": null,
+          "since": "0.0.1",
+          "throws": [],
+          "file": "Set"
+        }
+      },
+      "declarations": [
+        {
+          "kind": "pack",
+          "name": "Set",
+          "signature": "pack Set<T>",
+          "doc": {
+            "summary": "A generic collection that stores unique elements.",
+            "description": "Set guarantees that no duplicate elements are stored. Elements are stored in insertion order.",
+            "tags": {
+              "param": [
+                {
+                  "name": "T",
+                  "description": "The type of elements stored in this set."
+                }
+              ],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "prop",
+          "name": "length",
+          "signature": "prop length: Int = size",
+          "doc": {
+            "summary": "The number of elements in the set.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": null,
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "prop",
+          "name": "isEmpty",
+          "signature": "prop isEmpty: Bool = size == 0",
+          "doc": {
+            "summary": "Whether the set contains no elements.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": null,
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "prop",
+          "name": "isNotEmpty",
+          "signature": "prop isNotEmpty: Bool = size > 0",
+          "doc": {
+            "summary": "Whether the set contains at least one element.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": null,
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "growSet",
+          "signature": "func growSet()",
+          "doc": null,
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "add",
+          "signature": "func add(element: T): Bool",
+          "doc": {
+            "summary": "Adds an element to the set.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "element",
+                  "description": "The element to add."
+                }
+              ],
+              "return": "true if the element was added, false if it already existed.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "remove",
+          "signature": "func remove(element: T): Bool",
+          "doc": {
+            "summary": "Removes an element from the set.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "element",
+                  "description": "The element to remove."
+                }
+              ],
+              "return": "true if the element was removed, false if not found.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "contains",
+          "signature": "func contains(element: T): Bool",
+          "doc": {
+            "summary": "Checks whether the set contains the given element.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "element",
+                  "description": "The element to search for."
+                }
+              ],
+              "return": "true if the element is found, false otherwise.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "clear",
+          "signature": "func clear()",
+          "doc": {
+            "summary": "Removes all elements from the set.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "union",
+          "signature": "func union(other: Set<T>): Set<T>",
+          "doc": {
+            "summary": "Returns a new set containing all elements from both sets.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "other",
+                  "description": "The other set to union with."
+                }
+              ],
+              "return": "A new set with all unique elements from both sets.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "intersect",
+          "signature": "func intersect(other: Set<T>): Set<T>",
+          "doc": {
+            "summary": "Returns a new set containing only elements present in both sets.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "other",
+                  "description": "The other set to intersect with."
+                }
+              ],
+              "return": "A new set with common elements.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "difference",
+          "signature": "func difference(other: Set<T>): Set<T>",
+          "doc": {
+            "summary": "Returns a new set containing elements in this set but not in the other.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "other",
+                  "description": "The set to subtract."
+                }
+              ],
+              "return": "A new set with elements unique to this set.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "forEach",
+          "signature": "func forEach(action: (T) -> Unit)",
+          "doc": {
+            "summary": "Executes the given action on each element.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "action",
+                  "description": "The function to apply to each element."
+                }
+              ],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "filter",
+          "signature": "func filter(predicate: (T) -> Bool): Set<T>",
+          "doc": {
+            "summary": "Returns a new set containing only elements that satisfy the predicate.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "predicate",
+                  "description": "The function to test each element."
+                }
+              ],
+              "return": "A new set with matching elements.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "any",
+          "signature": "func any(predicate: (T) -> Bool): Bool",
+          "doc": {
+            "summary": "Returns true if at least one element satisfies the predicate.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "predicate",
+                  "description": "The function to test each element."
+                }
+              ],
+              "return": "true if any element matches, false otherwise.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "all",
+          "signature": "func all(predicate: (T) -> Bool): Bool",
+          "doc": {
+            "summary": "Returns true if all elements satisfy the predicate.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "predicate",
+                  "description": "The function to test each element."
+                }
+              ],
+              "return": "true if every element matches, false otherwise.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "toArray",
+          "signature": "func toArray(): [T]",
+          "doc": {
+            "summary": "Copies all elements into a raw array.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": "An array containing all elements.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "toString",
+          "signature": "func toString(): String",
+          "doc": {
+            "summary": "Returns a string representation of the set.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": "A string in the format \"{element1, element2, ...}\".",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        }
+      ]
+    },
+    {
+      "name": "Sort",
+      "package": "std.algorithm.sort",
+      "file": "Algorithm/Sort.az",
+      "category": "algorithm",
+      "stability": "experimental",
+      "since": null,
+      "fileDoc": {
+        "summary": "Sorting functions for arrays.",
+        "description": "Provides stable insertion sort, descending sort, sorted check, and array reversal operations.",
+        "tags": {
+          "param": [],
+          "return": null,
+          "since": "0.0.1",
+          "throws": [],
+          "file": "Sort"
+        }
+      },
+      "declarations": [
+        {
+          "kind": "func",
+          "name": "sort",
+          "signature": "func sort<T>(arr: T[]): T[]",
+          "doc": {
+            "summary": "Sorts an array in ascending order using insertion sort.",
+            "description": "Returns a new sorted array; the original is not modified.",
+            "tags": {
+              "param": [
+                {
+                  "name": "arr",
+                  "description": "The array to sort."
+                }
+              ],
+              "return": "A new array with elements in ascending order.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "sortDescending",
+          "signature": "func sortDescending<T>(arr: T[]): T[]",
+          "doc": {
+            "summary": "Sorts an array in descending order.",
+            "description": "Returns a new sorted array; the original is not modified.",
+            "tags": {
+              "param": [
+                {
+                  "name": "arr",
+                  "description": "The array to sort."
+                }
+              ],
+              "return": "A new array with elements in descending order.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "isSorted",
+          "signature": "func isSorted<T>(arr: T[]): Bool",
+          "doc": {
+            "summary": "Checks whether an array is sorted in ascending order.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "arr",
+                  "description": "The array to check."
+                }
+              ],
+              "return": "true if the array is sorted, false otherwise.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "reverse",
+          "signature": "func reverse<T>(arr: T[]): T[]",
+          "doc": {
+            "summary": "Returns a new array with elements in reverse order.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "arr",
+                  "description": "The array to reverse."
+                }
+              ],
+              "return": "A new reversed array.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        }
+      ]
+    },
+    {
+      "name": "Stack",
+      "package": "std.container.stack",
+      "file": "Container/Stack.az",
+      "category": "container",
+      "stability": "experimental",
+      "since": null,
+      "fileDoc": {
+        "summary": "Generic LIFO stack collection.",
+        "description": "Provides a last-in-first-out stack backed by a pointer array, with push, pop, and peek operations. Uses pointer-based storage with explicit capacity management.",
+        "tags": {
+          "param": [],
+          "return": null,
+          "since": "0.0.1",
+          "throws": [],
+          "file": "Stack"
+        }
+      },
+      "declarations": [
+        {
+          "kind": "pack",
+          "name": "Stack",
+          "signature": "pack Stack<T>",
+          "doc": {
+            "summary": "A generic last-in-first-out (LIFO) stack.",
+            "description": "Stack provides pointer-backed storage where elements are added and removed from the top.",
+            "tags": {
+              "param": [
+                {
+                  "name": "T",
+                  "description": "The type of elements stored in this stack."
+                }
+              ],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "prop",
+          "name": "length",
+          "signature": "prop length: Int = size",
+          "doc": {
+            "summary": "The number of elements in the stack.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": null,
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "prop",
+          "name": "isEmpty",
+          "signature": "prop isEmpty: Bool = size == 0",
+          "doc": {
+            "summary": "Whether the stack contains no elements.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": null,
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "prop",
+          "name": "isNotEmpty",
+          "signature": "prop isNotEmpty: Bool = size > 0",
+          "doc": {
+            "summary": "Whether the stack contains at least one element.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": null,
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "growStack",
+          "signature": "func growStack()",
+          "doc": null,
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "push",
+          "signature": "func push(element: T)",
+          "doc": {
+            "summary": "Pushes an element onto the top of the stack.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "element",
+                  "description": "The element to push."
+                }
+              ],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "pop",
+          "signature": "func pop(): T",
+          "doc": {
+            "summary": "Removes and returns the top element of the stack.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": "The removed top element.",
+              "since": "0.0.1",
+              "throws": [
+                "AssertionError if the stack is empty."
+              ],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "peek",
+          "signature": "func peek(): T",
+          "doc": {
+            "summary": "Returns the top element without removing it.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": "The top element.",
+              "since": "0.0.1",
+              "throws": [
+                "AssertionError if the stack is empty."
+              ],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "clear",
+          "signature": "func clear()",
+          "doc": {
+            "summary": "Removes all elements from the stack.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "toString",
+          "signature": "func toString(): String",
+          "doc": {
+            "summary": "Returns a string representation of the stack.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": "A string in the format \"[bottom, ..., top]\".",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        }
+      ]
+    },
+    {
+      "name": "Sync",
+      "package": "std.sync",
+      "file": "Parallelism/Sync.az",
+      "category": "parallelism",
+      "stability": "experimental",
+      "since": null,
+      "fileDoc": {
+        "summary": "Synchronization patterns and primitives.",
+        "description": "Provides higher-level synchronization utilities built on top of the language's atomic and mutex primitives: Guard for safe shared state, CountDownLatch for coordination, and SpinLock for lightweight locking.",
+        "tags": {
+          "param": [],
+          "return": null,
+          "since": "0.0.1",
+          "throws": [],
+          "file": "Sync"
+        }
+      },
+      "declarations": [
+        {
+          "kind": "pack",
+          "name": "Guard",
+          "signature": "pack Guard<T>",
+          "doc": {
+            "summary": "A mutex-protected value that provides safe concurrent access.",
+            "description": "Guard wraps a value with a mutex, ensuring that reads and writes are always performed under lock protection.",
+            "tags": {
+              "param": [
+                {
+                  "name": "T",
+                  "description": "The type of the protected value."
+                }
+              ],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "read",
+          "signature": "func read(action: (T) -> Unit)",
+          "doc": {
+            "summary": "Reads the inner value under lock.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "action",
+                  "description": "The function to execute with the current value."
+                }
+              ],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "write",
+          "signature": "func write(action: (T) -> T)",
+          "doc": {
+            "summary": "Modifies the inner value under lock.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "action",
+                  "description": "The function that receives the current value and returns the new value."
+                }
+              ],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "get",
+          "signature": "func get(): T",
+          "doc": {
+            "summary": "Returns a snapshot of the current value.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": "The current value.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "pack",
+          "name": "CountDownLatch",
+          "signature": "pack CountDownLatch<T>",
+          "doc": {
+            "summary": "A coordination primitive that allows threads to wait until",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "T",
+                  "description": "The type of the count value."
+                }
+              ],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "countDown",
+          "signature": "func countDown()",
+          "doc": {
+            "summary": "Decrements the latch count by one.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "prop",
+          "name": "isReached",
+          "signature": "prop isReached: Bool = atomic.load() >= count",
+          "doc": {
+            "summary": "Whether the latch count has been reached.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "pack",
+          "name": "SpinLock",
+          "signature": "pack SpinLock<T>",
+          "doc": {
+            "summary": "A lightweight CAS-based spin lock.",
+            "description": "SpinLock uses an atomic flag for minimal-overhead mutual exclusion. Best suited for very short critical sections.",
+            "tags": {
+              "param": [
+                {
+                  "name": "T",
+                  "description": "Unused type parameter for template registration."
+                }
+              ],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "acquire",
+          "signature": "func acquire()",
+          "doc": {
+            "summary": "Acquires the lock, spinning until successful.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "release",
+          "signature": "func release()",
+          "doc": {
+            "summary": "Releases the lock.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "withLock",
+          "signature": "func withLock(action: () -> Unit)",
+          "doc": {
+            "summary": "Executes an action while holding the lock.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "action",
+                  "description": "The function to execute under lock."
+                }
+              ],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "withMutex",
+          "signature": "func withMutex<T>(mutex: T, action: () -> Unit)",
+          "doc": {
+            "summary": "Executes an action under the given mutex lock.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "mutex",
+                  "description": "The mutex to lock."
+                },
+                {
+                  "name": "action",
+                  "description": "The function to execute while holding the lock."
+                }
+              ],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        }
+      ]
+    },
+    {
+      "name": "Thread",
+      "package": "std.thread",
+      "file": "Parallelism/Thread.az",
+      "category": "parallelism",
+      "stability": "experimental",
+      "since": null,
+      "fileDoc": {
+        "summary": "Thread and scheduling utilities.",
+        "description": "Provides basic threading primitives including sleep, spawn, and thread joining.",
+        "tags": {
+          "param": [],
+          "return": null,
+          "since": "0.0.1",
+          "throws": [],
+          "file": "Thread"
+        }
+      },
+      "declarations": [
+        {
+          "kind": "task",
+          "name": "sleep",
+          "signature": "task sleep<T>(ms: T)",
+          "doc": {
+            "summary": "Suspends the current task for the given number of milliseconds.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "ms",
+                  "description": "The delay in milliseconds."
+                }
+              ],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "task",
+          "name": "spawnAsync",
+          "signature": "task spawnAsync<T>(ms: T, action: () -> Unit)",
+          "doc": {
+            "summary": "Spawns a new concurrent task that runs the given action.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "ms",
+                  "description": "A scheduling hint in milliseconds (pass 0 for immediate)."
+                },
+                {
+                  "name": "action",
+                  "description": "The function to execute."
+                }
+              ],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "fin",
+          "name": "handle",
+          "signature": "fin handle = async { action() }",
+          "doc": null,
+          "parentScope": null
+        },
+        {
+          "kind": "task",
+          "name": "joinAll",
+          "signature": "task joinAll<T>(count: T)",
+          "doc": {
+            "summary": "Suspends the current task for the given number of milliseconds.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "count",
+                  "description": "The delay in milliseconds."
+                }
+              ],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        }
+      ]
+    },
+    {
+      "name": "Traits",
+      "package": "std.traits.traits",
+      "file": "Traits/Traits.az",
+      "category": "traits",
+      "stability": "experimental",
+      "since": null,
+      "fileDoc": {
+        "summary": "Core type traits and promotion system.",
+        "description": "Defines the Numeric spec for arithmetic types and the compile-time type promotion function for mixed-type expressions.",
+        "tags": {
+          "param": [],
+          "return": null,
+          "since": "0.0.1",
+          "throws": [],
+          "file": "Traits"
+        }
+      },
+      "declarations": [
+        {
+          "kind": "spec",
+          "name": "Numeric",
+          "signature": "spec Numeric",
+          "doc": {
+            "summary": "A specification that marks types supporting arithmetic operations.",
+            "description": "Types implementing Numeric can be used with standard math operators and the promote type function.",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "impl",
+          "name": "Numeric for Int",
+          "signature": "impl Numeric for Int",
+          "doc": {
+            "summary": "Int satisfies the Numeric spec.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": null,
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "impl",
+          "name": "Numeric for Real",
+          "signature": "impl Numeric for Real",
+          "doc": {
+            "summary": "Real satisfies the Numeric spec.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": null,
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "type",
+          "name": "promote",
+          "signature": "type promote(T: Type...) where t.length >= 2",
+          "doc": {
+            "summary": "Determines the widest numeric type from a set of types at compile time.",
+            "description": "Given two or more types, returns the type with the highest rank, enabling safe implicit promotion in mixed-type arithmetic.",
+            "tags": {
+              "param": [
+                {
+                  "name": "T",
+                  "description": "Variadic type parameter pack of types to compare."
+                }
+              ],
+              "return": "The type with the highest numeric rank.",
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        }
+      ]
+    },
+    {
+      "name": "Tuple",
+      "package": "std.container.tuple",
+      "file": "Container/Tuple.az",
+      "category": "container",
+      "stability": "experimental",
+      "since": null,
+      "fileDoc": {
+        "summary": "Fixed-size heterogeneous container.",
+        "description": "A Tuple holds two or more values of potentially different types, accessible by their positional index.",
+        "tags": {
+          "param": [],
+          "return": null,
+          "since": "0.0.1",
+          "throws": [],
+          "file": "Tuple"
+        }
+      },
+      "declarations": [
+        {
+          "kind": "pack",
+          "name": "Tuple",
+          "signature": "pack Tuple<T...> where T.length >= 2",
+          "doc": {
+            "summary": "A fixed-size, ordered collection of heterogeneous values.",
+            "description": "Each element is accessible by its zero-based positional index. Tuples require at least two elements.",
+            "tags": {
+              "param": [
+                {
+                  "name": "T",
+                  "description": "Variadic type parameter pack for the element types."
+                }
+              ],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        }
+      ]
+    }
+  ]
+}
