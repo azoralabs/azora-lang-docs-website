@@ -41,19 +41,15 @@ export default function azora(Prism) {
     },
     number: /\b\d[\d_]*(?:\.[\d_]+)?\b/,
     'type-keyword': {
-      pattern: /\b(?:Int|Real|Bool|String|Unit|Type|ReturnType)\b/,
+      pattern: /\b(?:Int|UInt|Long|ULong|Byte|UByte|Short|UShort|Cent|UCent|Float|Real|Decimal|Bool|Char|String|Unit)\b/,
       alias: 'class-name',
     },
     'builtin-fn': {
-      pattern: /\b(?:print|println|delay|hasDeco|getDeco|platform|toString|toInt|toReal|promote!)\b/,
+      pattern: /\b(?:println)\b/,
       alias: 'builtin',
     },
     boolean: /\b(?:true|false)\b/,
-    'null-literal': {
-      pattern: /\bnull\b/,
-      alias: 'boolean',
-    },
-    keyword: /\b(?:var|fin|func|hook|test|if|else|for|loop|while|in|as|is|when|return|break|continue|expose|confine|inline|enum|slot|pack|impl|infx|deco|scope|package|use|flip|flop|by|typealias|spec|where|each|type|let|task|suspend|flow|yield|launch|async|await|assert|trace|with|self|prop|it|fail|try|catch|defer|alloc|drop)\b/,
+    keyword: /\b(?:var|let|fin|func|return|package|if|else|inline|deepinline|noinline|zone|friend|test|assert|trace|for|while|loop|in|break|continue|pack)\b/,
     'type-name': {
       pattern: /\b[A-Z][a-zA-Z0-9_]*\b/,
       alias: 'class-name',

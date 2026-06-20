@@ -87,6 +87,14 @@ export default function App() {
 
         {/* Content */}
         <main className="flex-1 overflow-y-auto">
+          <div className="mx-auto max-w-4xl px-6 pt-4">
+            <div className="rounded-lg border border-pastel-yellow/40 bg-pastel-yellow/10 px-4 py-3 text-sm text-az-30">
+              <strong className="text-az-10">Standard library — planned.</strong>{' '}
+              The current compiler ships only the built-ins listed under <em>Built-ins</em>
+              (types, <code>println</code>, array members). The modules below document the{' '}
+              <em>designed</em> standard-library API, which is not yet implemented.
+            </div>
+          </div>
           <DocPage module={activeModule} />
         </main>
       </div>

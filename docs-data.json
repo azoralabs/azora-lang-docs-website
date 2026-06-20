@@ -1,6 +1,122 @@
 {
-  "generated": "2026-03-08T18:02:34.358Z",
+  "generated": "2026-06-20T16:17:32.000Z",
   "modules": [
+    {
+      "name": "Built-ins",
+      "package": "std.builtins",
+      "file": "Language",
+      "category": "language",
+      "stability": "stable",
+      "since": "0.0.1",
+      "fileDoc": {
+        "summary": "Built-in types, functions, and members available in every Azora program without imports.",
+        "description": "Primitive types: Int, UInt, Long, ULong, Byte, UByte, Short, UShort, Cent, UCent, Float, Real, Decimal, Bool, Char, String, Unit. Control flow: if/else, while, for-in-range, loop, break, continue. Other built-ins: var/let/fin bindings, functions, pack structs, string interpolation, zone/friend-zone/scoping, inline/deepinline compile-time execution, test/assert/trace. A full standard library (containers, math, algorithms, concurrency) is designed but not yet implemented.",
+        "tags": {
+          "param": [],
+          "return": null,
+          "since": "0.0.1",
+          "throws": [],
+          "file": "Built-ins"
+        }
+      },
+      "declarations": [
+        {
+          "kind": "func",
+          "name": "println",
+          "signature": "func println(value)",
+          "doc": {
+            "summary": "Prints a single value followed by a newline.",
+            "description": "Accepts any type: Int, Real, Bool, String, Char, arrays, and structs.",
+            "tags": {
+              "param": [
+                {
+                  "name": "value",
+                  "description": "The value to print."
+                }
+              ],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "prop",
+          "name": "length",
+          "signature": "arr.length: Int",
+          "doc": {
+            "summary": "The number of elements in an array, or characters in a string.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "prop",
+          "name": "isEmpty",
+          "signature": "arr.isEmpty: Bool",
+          "doc": {
+            "summary": "True if the array has no elements.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "prop",
+          "name": "isNotEmpty",
+          "signature": "arr.isNotEmpty: Bool",
+          "doc": {
+            "summary": "True if the array has at least one element.",
+            "description": "",
+            "tags": {
+              "param": [],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "add",
+          "signature": "func arr.add(value): Unit",
+          "doc": {
+            "summary": "Appends an element to the end of an array, growing it by one.",
+            "description": "",
+            "tags": {
+              "param": [
+                {
+                  "name": "value",
+                  "description": "The element to append."
+                }
+              ],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        }
+      ]
+    },
     {
       "name": "Async",
       "package": "std.concurrency.async",

@@ -1,10 +1,13 @@
-const CATEGORY_ORDER = ['concurrency', 'container', 'io', 'math', 'traits']
+const CATEGORY_ORDER = ['language', 'container', 'io', 'math', 'algorithm', 'traits', 'concurrency', 'parallelism']
 const CATEGORY_LABELS = {
+  language: 'Built-ins',
   math: 'Math',
   container: 'Containers',
   io: 'I/O',
+  algorithm: 'Algorithms',
   traits: 'Traits',
   concurrency: 'Concurrency',
+  parallelism: 'Parallelism',
 }
 
 function StabilityDot({ stability }) {
@@ -25,7 +28,10 @@ export default function Sidebar({ modules, active, onSelect, onClose }) {
     grouped[cat].sort((a, b) => a.name.localeCompare(b.name))
   }
 
-  const sortedCategories = CATEGORY_ORDER.filter(c => grouped[c])
+  // Ordered categories first, then any remaining categories alphabetically
+  const ordered = CATEGORY_ORDER.filter(c => grouped[c])
+  const remaining = Object.keys(grouped).filter(c => !CATEGORY_ORDER.includes(c)).sort()
+  const sortedCategories = [...ordered, ...remaining]
 
   return (
     <nav className="h-full overflow-y-auto py-4 px-3 pb-20">
