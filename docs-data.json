@@ -10,7 +10,7 @@
       "since": "0.0.1",
       "fileDoc": {
         "summary": "Built-in types, functions, and members available in every Azora program without imports.",
-        "description": "Primitive types: Int, UInt, Long, ULong, Byte, UByte, Short, UShort, Cent, UCent, Float, Real, Decimal, Bool, Char, String, Unit. Control flow: if/else, while, for-in-range, loop, break, continue. Other built-ins: var/let/fin bindings, functions, pack structs, string interpolation, zone/friend-zone/scoping, inline/deepinline compile-time execution, test/assert/trace. A full standard library (containers, math, algorithms, concurrency) is designed but not yet implemented.",
+        "description": "Primitive types: Int, UInt, Long, ULong, Byte, UByte, Short, UShort, Cent, UCent, Float, Real, Decimal, Bool, Char, String, Unit. Control flow: if/else, while, for-in-range, loop, break, continue. Enums and when/match. Tuples. Error handling: throw, try/catch, expr catch fallback. Other built-ins: var/let/fin bindings, functions, pack structs, string interpolation, zone/friend-zone/scoping, inline/deepinline compile-time execution, test/assert/trace. A full standard library (containers, math, algorithms, concurrency) is designed but not yet implemented.",
         "tags": {
           "param": [],
           "return": null,
@@ -107,6 +107,45 @@
                   "description": "The element to append."
                 }
               ],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "throw",
+          "signature": "throw value",
+          "doc": {
+            "summary": "Raises a value (of any type) as a throwable.",
+            "description": "Caught by try/catch or the catch expression.",
+            "tags": {
+              "param": [
+                {
+                  "name": "value",
+                  "description": "The value to throw."
+                }
+              ],
+              "return": null,
+              "since": "0.0.1",
+              "throws": [],
+              "file": null
+            }
+          },
+          "parentScope": null
+        },
+        {
+          "kind": "func",
+          "name": "when",
+          "signature": "when value { patterns -> body }",
+          "doc": {
+            "summary": "Matches a value against pattern branches.",
+            "description": "The first branch whose patterns (comma-separated) equal the value runs. An optional else branch handles the rest.",
+            "tags": {
+              "param": [],
               "return": null,
               "since": "0.0.1",
               "throws": [],
