@@ -14,7 +14,10 @@ import { join, relative, basename, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const STD_ROOT = join(__dirname, '..')
+// The standard library lives in the sibling `azora-lang` repo under Internal/Std.
+// (Previously this pointed at the parent dir, which would also sweep in the old compiler,
+// integration tests, and example apps — narrowing it keeps the API reference authoritative.)
+const STD_ROOT = join(__dirname, '..', 'azora-lang', 'Internal', 'Std')
 
 // --- File Discovery ---
 
@@ -90,7 +93,7 @@ function parseDocComment(raw) {
 
 // --- Declaration Parsing ---
 
-const DECL_PATTERN = /^\s*(?:@\w+\s+)*(?:expose\s+)?(func|pack|task|flow|prop|spec|fin|type|scope|enum|form|impl)\b(.+)?/
+const DECL_PATTERN = /^\s*(?:@\w+\s+)*(?:(?:expose|confine|protect)\s+)?(?:friend\s+)?(?:shield\s+)?(func|pack|task|flow|prop|spec|fin|type|zone|enum|form|impl)\b(.+)?/
 
 function parseDeclaration(line) {
   const m = line.match(DECL_PATTERN)
@@ -143,9 +146,9 @@ function parseDeclaration(line) {
       signature = line.trim().replace(/\s*\{[\s\S]*$/, '')
       break
     }
-    case 'scope': {
-      const scopeMatch = rest.match(/^(\w+)/)
-      if (scopeMatch) name = scopeMatch[1]
+    case 'zone': {
+      const zoneMatch = rest.match(/^(\w+)/)
+      if (zoneMatch) name = zoneMatch[1]
       signature = line.trim().replace(/\s*\{[\s\S]*$/, '')
       break
     }
@@ -216,16 +219,16 @@ function extractModule(filePath) {
   let fileDoc = null
   const declarations = []
 
-  // Track brace depth and scope stack for nesting
+  // Track brace depth and zone stack for nesting
   let braceDepth = 0
-  const scopeStack = [] // stack of { name, depth } for tracking which scope we're inside
+  const zoneStack = [] // stack of { name, depth } for tracking which zone we're inside
 
   let i = 0
   while (i < lines.length) {
     const line = lines[i]
 
-    // Determine current parent scope (not counting 'std')
-    const currentScope = scopeStack.length > 0 ? scopeStack[scopeStack.length - 1].name : null
+    // Determine current parent zone (not counting 'std')
+    const currentScope = zoneStack.length > 0 ? zoneStack[zoneStack.length - 1].name : null
 
     // Check for doc comment start
     if (line.trim().startsWith('/**')) {
@@ -259,20 +262,20 @@ function extractModule(filePath) {
       if (i < lines.length) {
         const decl = parseDeclaration(lines[i])
         if (decl) {
-          // Skip `expose scope std` — the top-level wrapper
-          if (decl.kind === 'scope' && decl.name === 'std' && lines[i].includes('expose')) {
+          // Skip `friend zone std` — the top-level wrapper
+          if (decl.kind === 'zone' && decl.name === 'std' && lines[i].includes('friend')) {
             braceDepth += countBraces(lines[i])
             i++
             continue
           }
-          // Track scope entry
-          if (decl.kind === 'scope') {
+          // Track zone entry
+          if (decl.kind === 'zone') {
             const delta = countBraces(lines[i])
             braceDepth += delta
-            if (delta > 0) scopeStack.push({ name: decl.name, depth: braceDepth })
+            if (delta > 0) zoneStack.push({ name: decl.name, depth: braceDepth })
             declarations.push({ ...decl, doc, children: [] })
           } else {
-            declarations.push({ ...decl, doc, parentScope: currentScope })
+            declarations.push({ ...decl, doc, parentZone: currentScope })
             braceDepth += countBraces(lines[i])
           }
           i++
@@ -289,26 +292,26 @@ function extractModule(filePath) {
       const depthBefore = braceDepth
       braceDepth += countBraces(line)
 
-      // Pop scope stack when we exit a scope block
-      while (scopeStack.length > 0 && braceDepth < scopeStack[scopeStack.length - 1].depth) {
-        scopeStack.pop()
+      // Pop zone stack when we exit a scope block
+      while (zoneStack.length > 0 && braceDepth < zoneStack[zoneStack.length - 1].depth) {
+        zoneStack.pop()
       }
 
       // Check for undocumented declarations (only at valid depths, not inside function bodies)
       if (depthBefore <= 2) {
         const decl = parseDeclaration(line)
         if (decl && decl.name && !line.trim().startsWith('//') && !line.trim().startsWith('confine')) {
-          // Skip `expose scope std`
-          if (decl.kind === 'scope' && decl.name === 'std' && line.includes('expose')) {
+          // Skip `friend zone std`
+          if (decl.kind === 'zone' && decl.name === 'std' && line.includes('friend')) {
             i++
             continue
           }
-          if (decl.kind === 'scope') {
+          if (decl.kind === 'zone') {
             const delta = countBraces(line) - (braceDepth - depthBefore) // already counted
-            if (braceDepth > depthBefore) scopeStack.push({ name: decl.name, depth: braceDepth })
+            if (braceDepth > depthBefore) zoneStack.push({ name: decl.name, depth: braceDepth })
             declarations.push({ ...decl, doc: null, children: [] })
           } else {
-            declarations.push({ ...decl, doc: null, parentScope: currentScope })
+            declarations.push({ ...decl, doc: null, parentZone: currentScope })
           }
         }
       }
@@ -316,15 +319,15 @@ function extractModule(filePath) {
     }
   }
 
-  // Nest children into their parent scopes
-  const scopeDecls = new Map()
+  // Nest children into their parent zones
+  const zoneDecls = new Map()
   for (const decl of declarations) {
-    if (decl.kind === 'scope') scopeDecls.set(decl.name, decl)
+    if (decl.kind === 'zone') zoneDecls.set(decl.name, decl)
   }
   const topLevel = []
   for (const decl of declarations) {
-    if (decl.parentScope && scopeDecls.has(decl.parentScope)) {
-      scopeDecls.get(decl.parentScope).children.push(decl)
+    if (decl.parentZone && zoneDecls.has(decl.parentZone)) {
+      zoneDecls.get(decl.parentZone).children.push(decl)
     } else {
       topLevel.push(decl)
     }
@@ -366,7 +369,7 @@ for (const mod of modules) {
 // Clean up temp flag
 for (const mod of modules) delete mod.renamed
 
-const output = { generated: new Date().toISOString(), modules }
+const output = { generated: new Date().toISOString(), version: '0.0.3', modules }
 const outPath = join(__dirname, 'docs-data.json')
 writeFileSync(outPath, JSON.stringify(output, null, 2))
 

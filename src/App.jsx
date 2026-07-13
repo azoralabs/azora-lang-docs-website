@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react'
 import Sidebar from './components/Sidebar'
 import DocPage from './components/DocPage'
@@ -21,7 +22,6 @@ export default function App() {
   const modules = docsData.modules || []
   const activeModule = modules.find(m => m.package === active) || modules[0] || null
 
-  // Set initial hash if none
   useEffect(() => {
     if (!active && modules.length > 0) {
       setActive(modules[0].package)
@@ -31,7 +31,6 @@ export default function App() {
   return (
     <div className="h-screen flex flex-col">
       <ThemeToggle />
-      {/* Header */}
       <header className="shrink-0 h-14 flex items-center px-4 border-b border-az-75 bg-az-85">
         <button
           className="lg:hidden mr-3 p-1 rounded text-az-30 hover:bg-az-75 cursor-pointer"
@@ -47,6 +46,9 @@ export default function App() {
         <h1 className="text-base font-semibold text-az-10 mr-3">
           Azora Standard Library
         </h1>
+        <span className="text-xs px-1.5 py-0.5 rounded-full font-medium bg-pastel-blue/20 text-pastel-blue mr-2">
+          v0.0.3
+        </span>
         {activeModule && (
           <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium
             ${activeModule.stability === 'stable'
@@ -60,7 +62,6 @@ export default function App() {
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
         <aside className={`
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
           lg:translate-x-0
@@ -77,7 +78,6 @@ export default function App() {
           />
         </aside>
 
-        {/* Backdrop */}
         {sidebarOpen && (
           <div
             className="fixed inset-0 z-20 bg-black/30 lg:hidden"
@@ -85,14 +85,13 @@ export default function App() {
           />
         )}
 
-        {/* Content */}
         <main className="flex-1 overflow-y-auto">
           <div className="mx-auto max-w-4xl px-6 pt-4">
             <div className="rounded-lg border border-pastel-yellow/40 bg-pastel-yellow/10 px-4 py-3 text-sm text-az-30">
               <strong className="text-az-10">Standard library — planned.</strong>{' '}
               The current compiler ships only the built-ins listed under <em>Built-ins</em>
               (types, <code>println</code>, array members). The modules below document the{' '}
-              <em>designed</em> standard-library API, which is not yet implemented.
+              <em>designed</em> standard-library API for Azora 0.0.3.
             </div>
           </div>
           <DocPage module={activeModule} />

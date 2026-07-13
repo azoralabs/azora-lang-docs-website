@@ -49,7 +49,7 @@ export default function azora(Prism) {
       alias: 'builtin',
     },
     boolean: /\b(?:true|false)\b/,
-    keyword: /\b(?:var|let|fin|func|return|package|if|else|inline|deepinline|noinline|zone|friend|test|assert|trace|for|while|loop|in|break|continue|pack)\b/,
+    keyword: /\b(?:var|let|fin|func|return|package|if|else|inline|deepinline|noinline|zone|friend|test|assert|trace|for|while|loop|in|by|reverse|break|continue|guard|throw|try|catch|rescue|defer|flow|yield|task|await|launch|shield|pack|impl|spec|infx|oper|ref|mut|out|shared|weak|mem|rem|ret|view|effect|prop)\b/,
     'type-name': {
       pattern: /\b[A-Z][a-zA-Z0-9_]*\b/,
       alias: 'class-name',

@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import DeclCard from './DeclCard'
 
-const KIND_ORDER = ['scope', 'fin', 'type', 'spec', 'impl', 'pack', 'enum', 'form', 'prop', 'func', 'task', 'flow']
+const KIND_ORDER = ['zone', 'fin', 'type', 'spec', 'impl', 'pack', 'enum', 'form', 'prop', 'func', 'task', 'flow']
 const SECTION_LABELS = {
-  scope: 'Scopes',
+  zone: 'Zones',
   fin: 'Constants',
   type: 'Type Functions',
   spec: 'Specs',
@@ -90,7 +90,7 @@ export default function DocPage({ module: mod }) {
           {mod.package}
         </p>
         <p className="text-xs font-mono text-az-50 mb-3">
-          All members are inside <span className="text-pastel-purple">expose scope std</span>
+          All members are inside <span className="text-pastel-purple">friend zone std</span>
         </p>
         {mod.fileDoc && (
           <>
