@@ -49,16 +49,6 @@ export default function App() {
         <span className="text-xs px-1.5 py-0.5 rounded-full font-medium bg-pastel-blue/20 text-pastel-blue mr-2">
           v0.0.3
         </span>
-        {activeModule && (
-          <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium
-            ${activeModule.stability === 'stable'
-              ? 'bg-pastel-green/20 text-pastel-green'
-              : 'bg-pastel-yellow/20 text-pastel-yellow'
-            }`}
-          >
-            {activeModule.stability}
-          </span>
-        )}
       </header>
 
       <div className="flex flex-1 overflow-hidden">

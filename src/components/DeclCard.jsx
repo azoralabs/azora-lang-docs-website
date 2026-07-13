@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import CodeBlock from './CodeBlock'
+import MetadataBadges from './MetadataBadges'
 
 const KIND_COLORS = {
   func: 'bg-pastel-orange',
@@ -100,17 +101,12 @@ function CardBody({ doc }) {
           </ul>
         </div>
       )}
-      {doc.tags?.since && (
-        <div className="pt-2 mt-2 border-t border-az-80 text-xs text-az-50">
-          Since {doc.tags.since}
-        </div>
-      )}
     </>
   )
 }
 
 export default function DeclCard({ decl }) {
-  const { kind, name, signature, doc, children } = decl
+  const { kind, name, signature, doc, metadata, children } = decl
   const [open, setOpen] = useState(true)
 
   // Scope with children — render as a container with nested members
@@ -121,6 +117,7 @@ export default function DeclCard({ decl }) {
         {open && (
           <div className="p-4 space-y-4">
             <CodeBlock>{signature}</CodeBlock>
+            <MetadataBadges metadata={metadata} />
             <CardBody doc={doc} />
             {/* Nested members */}
             <div className="space-y-3 pl-3 border-l-2 border-pastel-purple/30">
@@ -140,6 +137,7 @@ export default function DeclCard({ decl }) {
       {open && (
         <div className="p-4 space-y-4">
           <CodeBlock>{signature}</CodeBlock>
+          <MetadataBadges metadata={metadata} />
           <CardBody doc={doc} />
         </div>
       )}

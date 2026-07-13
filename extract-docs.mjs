@@ -37,6 +37,64 @@ function findAzFiles(dir) {
 
 // --- Doc Comment Parsing ---
 
+function isMetadataAnnotationLine(line) {
+  const text = line.trim()
+  return /^@sice(?:\b|\s|\(|$)/.test(text)
+    || /^@since\s*\(/.test(text)
+    || /^@deprecated(?:\b|\s|\(|$)/.test(text)
+    || /^@(experimental|stable)(?:\b|\s|\(|$)/.test(text)
+}
+
+function parseMetadataAnnotation(line) {
+  const text = line.trim()
+
+  let m = text.match(/^@(since|sice)\s*(?:\(\s*"([^"]+)"\s*\)|\s+(.+))?/)
+  if (m) {
+    return { since: (m[2] || m[3] || '').trim().replace(/^"|"$/g, '') || null }
+  }
+
+  m = text.match(/^@(experimental|stable)(?:\(\s*since\s*:\s*"([^"]+)"\s*\))?/)
+  if (m) {
+    return { stability: m[1], since: m[2] || null }
+  }
+
+  m = text.match(/^@deprecated(?:\((.*)\))?/)
+  if (m) {
+    const args = m[1] || ''
+    const since = args.match(/since\s*:\s*"([^"]+)"/)?.[1] || null
+    const message = args.match(/(?:message|reason)\s*:\s*"([^"]+)"/)?.[1] || null
+    return { stability: 'deprecated', deprecated: true, since, message }
+  }
+
+  return null
+}
+
+function mergeMetadata(current, next) {
+  if (!next) return current
+  return {
+    ...(current || {}),
+    ...next,
+    since: next.since || current?.since || null,
+  }
+}
+
+function collectMetadataAnnotations(lines, start) {
+  let metadata = null
+  let i = start
+  while (i < lines.length) {
+    const trimmed = lines[i].trim()
+    if (trimmed === '') {
+      i++
+      continue
+    }
+    const parsed = parseMetadataAnnotation(trimmed)
+    if (!parsed) break
+    metadata = mergeMetadata(metadata, parsed)
+    i++
+  }
+  return { index: i, metadata }
+}
+
 function parseDocComment(raw) {
   // Strip /** and */ and leading * on each line
   const lines = raw
@@ -52,6 +110,8 @@ function parseDocComment(raw) {
   let inDescription = false
 
   for (const line of lines) {
+    if (isMetadataAnnotationLine(line)) continue
+
     const tagMatch = line.match(/^@(param|return|since|throws|file)\s+(.*)/)
     if (tagMatch) {
       const [, tag, rest] = tagMatch
@@ -95,7 +155,13 @@ function parseDocComment(raw) {
 
 const DECL_PATTERN = /^\s*(?:@\w+\s+)*(?:(?:expose|confine|protect)\s+)?(?:friend\s+)?(?:shield\s+)?(func|pack|task|flow|prop|spec|fin|type|zone|enum|form|impl)\b(.+)?/
 
+function isConfinedDeclarationLine(line) {
+  return /^\s*(?:@\w+(?:\([^)]*\))?\s+)*confine\b/.test(line)
+}
+
 function parseDeclaration(line) {
+  if (isConfinedDeclarationLine(line)) return null
+
   const m = line.match(DECL_PATTERN)
   if (!m) return null
 
@@ -256,8 +322,9 @@ function extractModule(filePath) {
         continue
       }
 
-      // Skip blank lines and decorator lines, look for the next declaration
-      while (i < lines.length && (lines[i].trim() === '' || lines[i].trim().startsWith('@'))) i++
+      // Skip blank lines and collect declaration annotations before the next declaration.
+      const annotated = collectMetadataAnnotations(lines, i)
+      i = annotated.index
 
       if (i < lines.length) {
         const decl = parseDeclaration(lines[i])
@@ -273,9 +340,9 @@ function extractModule(filePath) {
             const delta = countBraces(lines[i])
             braceDepth += delta
             if (delta > 0) zoneStack.push({ name: decl.name, depth: braceDepth })
-            declarations.push({ ...decl, doc, children: [] })
+            declarations.push({ ...decl, doc, metadata: annotated.metadata, children: [] })
           } else {
-            declarations.push({ ...decl, doc, parentZone: currentScope })
+            declarations.push({ ...decl, doc, metadata: annotated.metadata, parentZone: currentScope })
             braceDepth += countBraces(lines[i])
           }
           i++
@@ -287,6 +354,33 @@ function extractModule(filePath) {
       if (!fileDoc) {
         fileDoc = doc
       }
+    } else if (parseMetadataAnnotation(line)) {
+      const annotated = collectMetadataAnnotations(lines, i)
+      i = annotated.index
+      if (i >= lines.length) break
+
+      const declLine = lines[i]
+      const depthBefore = braceDepth
+      braceDepth += countBraces(declLine)
+
+      if (depthBefore <= 2) {
+        const decl = parseDeclaration(declLine)
+        if (decl && decl.name && !declLine.trim().startsWith('//')) {
+          // Skip `friend zone std`
+          if (decl.kind === 'zone' && decl.name === 'std' && declLine.includes('friend')) {
+            i++
+            continue
+          }
+          if (decl.kind === 'zone') {
+            if (braceDepth > depthBefore) zoneStack.push({ name: decl.name, depth: braceDepth })
+            declarations.push({ ...decl, doc: null, metadata: annotated.metadata, children: [] })
+          } else {
+            declarations.push({ ...decl, doc: null, metadata: annotated.metadata, parentZone: currentScope })
+          }
+        }
+      }
+
+      i++
     } else {
       // Track brace depth
       const depthBefore = braceDepth
@@ -300,7 +394,7 @@ function extractModule(filePath) {
       // Check for undocumented declarations (only at valid depths, not inside function bodies)
       if (depthBefore <= 2) {
         const decl = parseDeclaration(line)
-        if (decl && decl.name && !line.trim().startsWith('//') && !line.trim().startsWith('confine')) {
+        if (decl && decl.name && !line.trim().startsWith('//')) {
           // Skip `friend zone std`
           if (decl.kind === 'zone' && decl.name === 'std' && line.includes('friend')) {
             i++

@@ -10,11 +10,6 @@ const CATEGORY_LABELS = {
   parallelism: 'Parallelism',
 }
 
-function StabilityDot({ stability }) {
-  const color = stability === 'stable' ? 'bg-pastel-green' : 'bg-pastel-yellow'
-  return <span className={`inline-block w-1.5 h-1.5 rounded-full ${color} mr-1.5`} />
-}
-
 export default function Sidebar({ modules, active, onSelect, onClose }) {
   const grouped = {}
   for (const mod of modules) {
@@ -57,7 +52,6 @@ export default function Sidebar({ modules, active, onSelect, onClose }) {
                     : 'text-az-30 hover:bg-az-80'
                   }`}
               >
-                <StabilityDot stability={mod.stability} />
                 {mod.name}
               </button>
             )

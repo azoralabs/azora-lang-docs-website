@@ -17,21 +17,6 @@ const SECTION_LABELS = {
   flow: 'Flows',
 }
 
-function StabilityBadge({ stability, since }) {
-  if (stability === 'stable') {
-    return (
-      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-pastel-green/20 text-pastel-green">
-        Stable{since ? ` ${since}` : ''}
-      </span>
-    )
-  }
-  return (
-    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-pastel-yellow/20 text-pastel-yellow">
-      Experimental
-    </span>
-  )
-}
-
 function CollapsibleSection({ label, count, children }) {
   const [open, setOpen] = useState(true)
   return (
@@ -84,7 +69,6 @@ export default function DocPage({ module: mod }) {
           <h1 className="text-2xl font-bold text-az-10">
             {mod.name}
           </h1>
-          <StabilityBadge stability={mod.stability} since={mod.since || mod.fileDoc?.tags?.since} />
         </div>
         <p className="text-sm font-mono text-az-40 mb-1">
           {mod.package}
@@ -102,11 +86,6 @@ export default function DocPage({ module: mod }) {
             {mod.fileDoc.description && (
               <p className="text-sm text-az-30">
                 {mod.fileDoc.description}
-              </p>
-            )}
-            {(mod.since || mod.fileDoc.tags?.since) && (
-              <p className="text-xs text-az-50 mt-2">
-                Since {mod.since || mod.fileDoc.tags.since}
               </p>
             )}
           </>
