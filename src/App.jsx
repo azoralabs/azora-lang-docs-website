@@ -29,9 +29,9 @@ export default function App() {
   }, [active, modules, setActive])
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="docs-shell h-screen flex flex-col">
       <ThemeToggle />
-      <header className="shrink-0 h-14 flex items-center px-4 border-b border-az-75 bg-az-85">
+      <header className="docs-topbar shrink-0 h-14 flex items-center px-4 border-b border-az-75 bg-az-85">
         <button
           className="lg:hidden mr-3 p-1 rounded text-az-30 hover:bg-az-75 cursor-pointer"
           onClick={() => setSidebarOpen(o => !o)}
@@ -43,18 +43,18 @@ export default function App() {
             <rect y="15" width="20" height="2" rx="1" />
           </svg>
         </button>
-        <h1 className="text-base font-semibold text-az-10 mr-3">
-          Azora Standard Library
-        </h1>
-        <span className="text-xs px-1.5 py-0.5 rounded-full font-medium bg-pastel-blue/20 text-pastel-blue mr-2">
-          v0.0.3
-        </span>
+        <div className="docs-brand flex items-center gap-2">
+          <img src="/azora_logo.svg" alt="Azora" className="docs-brand__logo" />
+          <h1 className="text-base font-semibold text-az-10">Azora</h1>
+          <span className="docs-brand__product">Standard Library</span>
+          <span className="version-tag">v0.0.3</span>
+        </div>
       </header>
 
       <div className="flex flex-1 overflow-hidden">
         <aside className={`
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-          lg:translate-x-0
+          lg:translate-x-0 docs-sidebar
           fixed lg:static inset-y-14 left-0 z-30
           w-56 shrink-0 border-r border-az-75
           bg-az-85
@@ -75,7 +75,7 @@ export default function App() {
           />
         )}
 
-        <main className="flex-1 overflow-y-auto">
+        <main className="docs-main flex-1 overflow-y-auto">
           <div className="mx-auto max-w-4xl px-6 pt-4">
             <div className="rounded-lg border border-pastel-yellow/40 bg-pastel-yellow/10 px-4 py-3 text-sm text-az-30">
               <strong className="text-az-10">Standard library — planned.</strong>{' '}
