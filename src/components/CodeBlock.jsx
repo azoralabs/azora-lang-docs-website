@@ -1,8 +1,18 @@
 import { useState } from 'react'
 import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter'
-import azora from '../data/azora-prism'
+import { createAzoraLanguage } from '../data/azora-prism'
 
-SyntaxHighlighter.registerLanguage('azora', azora)
+const semanticLanguages = new Map()
+let semanticLanguageId = 0
+
+function semanticAzoraLanguage(source) {
+  const existing = semanticLanguages.get(source)
+  if (existing) return existing
+  const name = `azorasemantic${semanticLanguageId++}`
+  SyntaxHighlighter.registerLanguage(name, createAzoraLanguage(source, name))
+  semanticLanguages.set(source, name)
+  return name
+}
 
 const theme = {
   'code[class*="language-"]': {
@@ -25,8 +35,13 @@ const theme = {
   keyword: { color: '#D16B8E', fontWeight: 'bold' },
   boolean: { color: '#D16B8E', fontWeight: 'bold' },
   'class-name': { color: '#5FA89F' },
-  builtin: { color: '#D4A574' },
-  function: { color: '#D4A574' },
+  builtin: { color: '#E6C96B' },
+  function: { color: '#E6C96B' },
+  parameter: {
+    color: '#B8B8B8',
+    textDecorationLine: 'underline',
+    textUnderlineOffset: '3px',
+  },
   string: { color: '#7DBF8A' },
   number: { color: '#ECECEC' },
   'doc-comment': { color: '#6B9F77', fontStyle: 'italic' },
@@ -34,7 +49,9 @@ const theme = {
   'doc-param-name': { color: '#D9D9D9' },
   comment: { color: '#676767', fontStyle: 'italic' },
   annotation: { color: '#E6C96B' },
-  variable: { color: '#B06FA8', fontStyle: 'italic' },
+  variable: { color: '#D9DADA' },
+  preprocessor: { color: '#B06FA8', fontStyle: 'italic' },
+  macro: { color: '#B06FA8', fontWeight: 'bold' },
   interpolation: { color: '#E6C96B' },
   'interpolation-punctuation': { color: '#E6C96B' },
   operator: { color: '#B2B3B3' },
@@ -43,6 +60,8 @@ const theme = {
 
 export default function CodeBlock({ children }) {
   const [copied, setCopied] = useState(false)
+  const source = String(children ?? '')
+  const language = semanticAzoraLanguage(source)
 
   const copy = () => {
     navigator.clipboard.writeText(children)
@@ -60,7 +79,7 @@ export default function CodeBlock({ children }) {
         {copied ? 'Copied!' : 'Copy'}
       </button>
       <SyntaxHighlighter
-        language="azora"
+        language={language}
         style={theme}
         wrapLongLines
       >
