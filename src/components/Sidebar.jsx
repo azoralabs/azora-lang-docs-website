@@ -1,4 +1,4 @@
-const CATEGORY_ORDER = ['language', 'container', 'io', 'math', 'algorithm', 'traits', 'concurrency', 'parallelism']
+const CATEGORY_ORDER = ['language', 'container', 'io', 'math', 'algorithm', 'traits', 'convert', 'functional', 'memory', 'concurrency', 'parallelism']
 const CATEGORY_LABELS = {
   language: 'Built-ins',
   math: 'Math',
@@ -6,6 +6,9 @@ const CATEGORY_LABELS = {
   io: 'I/O',
   algorithm: 'Algorithms',
   traits: 'Traits',
+  convert: 'Conversion',
+  functional: 'Functional',
+  memory: 'Memory',
   concurrency: 'Concurrency',
   parallelism: 'Parallelism',
 }

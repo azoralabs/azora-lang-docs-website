@@ -47,7 +47,7 @@ export default function App() {
           <img src="/azora_logo.svg" alt="Azora" className="docs-brand__logo" />
           <h1 className="text-base font-semibold text-az-10">Azora</h1>
           <span className="docs-brand__product">Standard Library</span>
-          <span className="version-tag">v0.0.3</span>
+          <span className="version-tag">v{docsData.version}</span>
         </div>
       </header>
 
@@ -77,11 +77,9 @@ export default function App() {
 
         <main className="docs-main flex-1 overflow-y-auto">
           <div className="mx-auto max-w-4xl px-6 pt-4">
-            <div className="rounded-lg border border-pastel-yellow/40 bg-pastel-yellow/10 px-4 py-3 text-sm text-az-30">
-              <strong className="text-az-10">Standard library — planned.</strong>{' '}
-              The current compiler ships only the built-ins listed under <em>Built-ins</em>
-              (types, <code>println</code>, array members). The modules below document the{' '}
-              <em>designed</em> standard-library API for Azora 0.0.3.
+            <div className="rounded-lg border border-pastel-blue/40 bg-pastel-blue/10 px-4 py-3 text-sm text-az-30">
+              <strong className="text-az-10">Azora {docsData.version} API reference.</strong>{' '}
+              Generated from the standard-library sources shipped with this language release.
             </div>
           </div>
           <DocPage module={activeModule} />

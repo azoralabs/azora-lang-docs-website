@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import DeclCard from './DeclCard'
 
-const KIND_ORDER = ['zone', 'fin', 'type', 'spec', 'impl', 'pack', 'enum', 'form', 'prop', 'func', 'task', 'flow']
+const KIND_ORDER = ['zone', 'fin', 'type', 'spec', 'impl', 'deco', 'pack', 'enum', 'slot', 'form', 'fail', 'prop', 'func', 'infx', 'hook', 'task', 'flow']
 const SECTION_LABELS = {
   zone: 'Zones',
   fin: 'Constants',
@@ -9,9 +9,14 @@ const SECTION_LABELS = {
   spec: 'Specs',
   pack: 'Packs',
   enum: 'Enums',
+  slot: 'Slots',
   form: 'Forms',
+  fail: 'Failures',
+  deco: 'Decorators',
   prop: 'Properties',
   func: 'Functions',
+  infx: 'Infix Functions',
+  hook: 'Hooks',
   impl: 'Implementations',
   task: 'Tasks',
   flow: 'Flows',

@@ -14,10 +14,8 @@ import { join, relative, basename, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-// The standard library lives in the sibling `azora-lang` repo under Internal/Std.
-// (Previously this pointed at the parent dir, which would also sweep in the old compiler,
-// integration tests, and example apps — narrowing it keeps the API reference authoritative.)
-const STD_ROOT = join(__dirname, '..', 'azora-lang', 'Internal', 'Std')
+const DOCS_VERSION = '0.0.4'
+const STD_ROOT = join(__dirname, '..', 'azora-lang', 'std')
 
 // --- File Discovery ---
 
@@ -39,30 +37,29 @@ function findAzFiles(dir) {
 
 function isMetadataAnnotationLine(line) {
   const text = line.trim()
-  return /^@sice(?:\b|\s|\(|$)/.test(text)
-    || /^@since\s*\(/.test(text)
-    || /^@deprecated(?:\b|\s|\(|$)/.test(text)
-    || /^@(experimental|stable)(?:\b|\s|\(|$)/.test(text)
+  return /^@(?:SinceAzora|Since|Sice)(?:\b|\s|\(|$)/i.test(text)
+    || /^@Deprecated(?:\b|\s|\(|$)/i.test(text)
+    || /^@(Experimental|Stable)(?:\b|\s|\(|$)/i.test(text)
 }
 
 function parseMetadataAnnotation(line) {
   const text = line.trim()
 
-  let m = text.match(/^@(since|sice)\s*(?:\(\s*"([^"]+)"\s*\)|\s+(.+))?/)
+  let m = text.match(/^@(SinceAzora|Since|Sice)\s*(?:\(\s*"([^"]+)"\s*\)|\s+(.+))?/i)
   if (m) {
     return { since: (m[2] || m[3] || '').trim().replace(/^"|"$/g, '') || null }
   }
 
-  m = text.match(/^@(experimental|stable)(?:\(\s*since\s*:\s*"([^"]+)"\s*\))?/)
+  m = text.match(/^@(Experimental|Stable)(?:\(\s*(?:sinceAzora|since)\s*:\s*"([^"]+)"\s*\))?/i)
   if (m) {
-    return { stability: m[1], since: m[2] || null }
+    return { stability: m[1].toLowerCase(), since: m[2] || null }
   }
 
-  m = text.match(/^@deprecated(?:\((.*)\))?/)
+  m = text.match(/^@Deprecated(?:\((.*)\))?/i)
   if (m) {
     const args = m[1] || ''
-    const since = args.match(/since\s*:\s*"([^"]+)"/)?.[1] || null
-    const message = args.match(/(?:message|reason)\s*:\s*"([^"]+)"/)?.[1] || null
+    const since = args.match(/(?:sinceAzora|since)\s*:\s*"([^"]+)"/i)?.[1] || null
+    const message = args.match(/(?:replacement|message|reason)\s*:\s*"([^"]+)"/i)?.[1] || null
     return { stability: 'deprecated', deprecated: true, since, message }
   }
 
@@ -87,10 +84,26 @@ function collectMetadataAnnotations(lines, start) {
       i++
       continue
     }
-    const parsed = parseMetadataAnnotation(trimmed)
-    if (!parsed) break
-    metadata = mergeMetadata(metadata, parsed)
-    i++
+    if (!/^@[A-Za-z_]\w*/.test(trimmed)) break
+
+    metadata = mergeMetadata(metadata, parseMetadataAnnotation(trimmed))
+
+    let parenDepth = 0
+    let inString = false
+    do {
+      const annotationLine = lines[i]
+      for (let offset = 0; offset < annotationLine.length; offset++) {
+        const char = annotationLine[offset]
+        if (char === '"' && annotationLine[offset - 1] !== '\\') {
+          inString = !inString
+        } else if (!inString && char === '(') {
+          parenDepth++
+        } else if (!inString && char === ')') {
+          parenDepth--
+        }
+      }
+      i++
+    } while (i < lines.length && parenDepth > 0)
   }
   return { index: i, metadata }
 }
@@ -153,7 +166,7 @@ function parseDocComment(raw) {
 
 // --- Declaration Parsing ---
 
-const DECL_PATTERN = /^\s*(?:@\w+\s+)*(?:(?:expose|confine|protect)\s+)?(?:friend\s+)?(?:shield\s+)?(func|pack|task|flow|prop|spec|fin|type|zone|enum|form|impl)\b(.+)?/
+const DECL_PATTERN = /^\s*(?:@\w+(?:\([^)]*\))?\s+)*(?:(?:expose|protect|protected|friend|shield|opaque|bridge|inline|deepinline|threadlocal|unsafe|use)\s+)*(func|pack|task|flow|prop|spec|fin|type|zone|enum|form|impl|deco|fail|slot|infx|hook)\b(.+)?/
 
 function isConfinedDeclarationLine(line) {
   return /^\s*(?:@\w+(?:\([^)]*\))?\s+)*confine\b/.test(line)
@@ -174,7 +187,9 @@ function parseDeclaration(line) {
   switch (kind) {
     case 'func':
     case 'task':
-    case 'flow': {
+    case 'flow':
+    case 'infx':
+    case 'hook': {
       const fnMatch = rest.match(/^(?:<[^>]+>\s+)?(\w+)/)
       if (fnMatch) name = fnMatch[1]
       signature = line.trim().replace(/\s*\{[\s\S]*$/, '').replace(/\s*=\s*[^{].*$/, (m) => m)
@@ -182,8 +197,11 @@ function parseDeclaration(line) {
     }
     case 'pack':
     case 'enum':
-    case 'form': {
-      const typeMatch = rest.match(/^(\w+)/)
+    case 'form':
+    case 'deco':
+    case 'fail':
+    case 'slot': {
+      const typeMatch = rest.match(/^(?:<[^>]+>\s+)?(\w+)/)
       if (typeMatch) name = typeMatch[1]
       signature = line.trim().replace(/\s*\{[\s\S]*$/, '')
       break
@@ -191,7 +209,7 @@ function parseDeclaration(line) {
     case 'spec': {
       const specMatch = rest.match(/^(\w+)/)
       if (specMatch) name = specMatch[1]
-      signature = line.trim()
+      signature = line.trim().replace(/\s*\{[\s\S]*$/, '')
       break
     }
     case 'prop': {
@@ -224,7 +242,7 @@ function parseDeclaration(line) {
       const implForMatch = rest.match(/^(\w+)\s+for\s+(\w+)/)
       if (implForMatch) {
         name = `${implForMatch[1]} for ${implForMatch[2]}`
-        signature = line.trim()
+        signature = line.trim().replace(/\s*\{[\s\S]*$/, '')
       } else {
         return null // skip impl blocks (method containers)
       }
@@ -233,6 +251,50 @@ function parseDeclaration(line) {
   }
 
   return { kind, name, signature }
+}
+
+function declarationWithSignature(lines, index, declaration) {
+  if (!declaration || !['func', 'task', 'flow', 'infx', 'hook'].includes(declaration.kind)) {
+    return declaration
+  }
+
+  const signatureLines = [lines[index].trim()]
+  let parenDepth = 0
+  let inString = false
+
+  const countParens = (line) => {
+    for (let offset = 0; offset < line.length; offset++) {
+      const char = line[offset]
+      if (char === '"' && line[offset - 1] !== '\\') {
+        inString = !inString
+      } else if (!inString && char === '(') {
+        parenDepth++
+      } else if (!inString && char === ')') {
+        parenDepth--
+      }
+    }
+  }
+
+  countParens(lines[index])
+  let cursor = index + 1
+  while (cursor < lines.length && parenDepth > 0) {
+    signatureLines.push(lines[cursor].trim())
+    countParens(lines[cursor])
+    cursor++
+  }
+
+  while (cursor < lines.length && /^\s*where\b/.test(lines[cursor])) {
+    signatureLines.push(lines[cursor].trim())
+    if (lines[cursor].includes('{')) break
+    cursor++
+  }
+
+  const signature = signatureLines
+    .join('\n')
+    .replace(/\s*\{[\s\S]*$/, '')
+    .trim()
+
+  return { ...declaration, signature }
 }
 
 // --- Brace Depth Tracking ---
@@ -258,9 +320,9 @@ function extractModule(filePath) {
   const source = readFileSync(filePath, 'utf-8')
   const lines = source.split('\n')
 
-  // Extract package
-  const pkgMatch = source.match(/^package\s+([\w.]+)/m)
-  const packageName = pkgMatch ? pkgMatch[1] : ''
+  // `export module` has the same documented module identity as `module`.
+  const moduleMatch = source.match(/^\s*(?:export\s+)?module\s+([\w.]+)/m)
+  const packageName = moduleMatch ? moduleMatch[1] : ''
 
   // Extract stability annotation
   let stability = 'unknown'
@@ -272,11 +334,13 @@ function extractModule(filePath) {
   }
 
   // Use file name as module name (e.g. List.az → List, IO.az → IO)
-  const moduleName = basename(filePath, '.az')
+  const fileName = basename(filePath, '.az')
+  const moduleName = fileName.charAt(0).toUpperCase() + fileName.slice(1)
 
   // Category from directory
   const relPath = relative(STD_ROOT, filePath)
-  const category = dirname(relPath).toLowerCase()
+  const categoryDir = dirname(relPath).toLowerCase()
+  const category = categoryDir === '.' ? 'language' : categoryDir.split('/')[0]
 
   // Use actual package name as the module identifier
   const moduleId = packageName
@@ -327,7 +391,7 @@ function extractModule(filePath) {
       i = annotated.index
 
       if (i < lines.length) {
-        const decl = parseDeclaration(lines[i])
+        const decl = declarationWithSignature(lines, i, parseDeclaration(lines[i]))
         if (decl) {
           // Skip `friend zone std` — the top-level wrapper
           if (decl.kind === 'zone' && decl.name === 'std' && lines[i].includes('friend')) {
@@ -354,7 +418,7 @@ function extractModule(filePath) {
       if (!fileDoc) {
         fileDoc = doc
       }
-    } else if (parseMetadataAnnotation(line)) {
+    } else if (/^\s*@[A-Za-z_]\w*/.test(line)) {
       const annotated = collectMetadataAnnotations(lines, i)
       i = annotated.index
       if (i >= lines.length) break
@@ -364,7 +428,7 @@ function extractModule(filePath) {
       braceDepth += countBraces(declLine)
 
       if (depthBefore <= 2) {
-        const decl = parseDeclaration(declLine)
+        const decl = declarationWithSignature(lines, i, parseDeclaration(declLine))
         if (decl && decl.name && !declLine.trim().startsWith('//')) {
           // Skip `friend zone std`
           if (decl.kind === 'zone' && decl.name === 'std' && declLine.includes('friend')) {
@@ -393,7 +457,7 @@ function extractModule(filePath) {
 
       // Check for undocumented declarations (only at valid depths, not inside function bodies)
       if (depthBefore <= 2) {
-        const decl = parseDeclaration(line)
+        const decl = declarationWithSignature(lines, i, parseDeclaration(line))
         if (decl && decl.name && !line.trim().startsWith('//')) {
           // Skip `friend zone std`
           if (decl.kind === 'zone' && decl.name === 'std' && line.includes('friend')) {
@@ -427,6 +491,15 @@ function extractModule(filePath) {
     }
   }
 
+  const documented = topLevel
+    .map((decl) => ({
+      ...decl,
+      ...(decl.children
+        ? { children: decl.children.filter((child) => child.doc || child.metadata) }
+        : {}),
+    }))
+    .filter((decl) => decl.doc || decl.metadata || decl.children?.length > 0)
+
   return {
     name: moduleName,
     package: moduleId,
@@ -435,7 +508,7 @@ function extractModule(filePath) {
     stability,
     since,
     fileDoc,
-    declarations: topLevel,
+    declarations: documented,
   }
 }
 
@@ -463,7 +536,7 @@ for (const mod of modules) {
 // Clean up temp flag
 for (const mod of modules) delete mod.renamed
 
-const output = { generated: new Date().toISOString(), version: '0.0.3', modules }
+const output = { generated: new Date().toISOString(), version: DOCS_VERSION, modules }
 const outPath = join(__dirname, 'docs-data.json')
 writeFileSync(outPath, JSON.stringify(output, null, 2))
 
