@@ -78,6 +78,21 @@ function CardBody({ doc }) {
       {doc.description && (
         <p className="text-sm text-az-30">{doc.description}</p>
       )}
+      {doc.tags?.generic?.length > 0 && (
+        <div>
+          <h4 className="text-xs font-semibold uppercase tracking-wider text-az-40 mb-1">Type parameters</h4>
+          <table className="w-full text-sm">
+            <tbody>
+              {doc.tags.generic.map((g, i) => (
+                <tr key={i} className="border-t border-az-80">
+                  <td className="py-1.5 pr-3 font-mono text-pastel-blue whitespace-nowrap">{g.name}</td>
+                  <td className="py-1.5 text-az-30">{g.description}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
       {doc.tags?.param?.length > 0 && (
         <div>
           <h4 className="text-xs font-semibold uppercase tracking-wider text-az-40 mb-1">Parameters</h4>

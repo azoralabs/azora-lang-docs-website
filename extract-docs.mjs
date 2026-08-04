@@ -118,24 +118,26 @@ function parseDocComment(raw) {
 
   let summary = ''
   let description = ''
-  const tags = { param: [], return: null, since: null, throws: [], file: null }
+  const tags = { param: [], generic: [], return: null, since: null, throws: [], file: null }
 
   let inDescription = false
 
   for (const line of lines) {
     if (isMetadataAnnotationLine(line)) continue
 
-    const tagMatch = line.match(/^@(param|return|since|throws|file)\s+(.*)/)
+    const tagMatch = line.match(/^@(param|generic|return|since|throws|file)\s+(.*)/)
     if (tagMatch) {
       const [, tag, rest] = tagMatch
       switch (tag) {
-        case 'param': {
-          const paramMatch = rest.match(/^(\w+)\s+(.*)/)
-          if (paramMatch) {
-            tags.param.push({ name: paramMatch[1], description: paramMatch[2] })
-          } else {
-            tags.param.push({ name: rest.trim(), description: '' })
-          }
+        // `@param` documents a value parameter, `@generic` a type parameter.
+        // They render as separate sections, so they are collected separately.
+        case 'param':
+        case 'generic': {
+          const entryMatch = rest.match(/^(\w+)\s+(.*)/)
+          const entry = entryMatch
+            ? { name: entryMatch[1], description: entryMatch[2] }
+            : { name: rest.trim(), description: '' }
+          tags[tag].push(entry)
           break
         }
         case 'return':
