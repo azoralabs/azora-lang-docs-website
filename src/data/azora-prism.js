@@ -6,7 +6,7 @@ const BUILTIN_TYPES = new Set([
   'UCent', 'UInt', 'ULong', 'UShort', 'USize', 'Unit',
 ])
 
-const KEYWORD_PATTERN = /\b(?:alloc|as|assert|await|bind|break|bridge|by|catch|confine|continue|ctor|deco|deepinline|defer|deref|drop|dtor|effect|else|enum|expose|export|fail|false|fin|flip|flop|flow|for|friend|func|guard|if|impl|import|in|infx|inject|inline|is|isolated|launch|let|loop|mem|meta|module|noinline|null|opaque|oper|out|pack|panic|prop|protect|protected|rem|rescue|ret|return|reverse|shield|slot|solo|spec|task|test|threadlocal|throw|trace|true|try|type|typealias|unsafe|use|var|when|while|with|wrap|yield|zone)\b/
+const KEYWORD_PATTERN = /\b(?:__float|__int|__uint|alloc|annot|as|assert|assoc|async|await|bind|binds|break|bridge|by|catch|confined|continue|ctor|deepinline|defer|delay|derive|derives|direct|dtor|effect|else|enum|error|escaping|exposed|factory|false|fin|for|func|graph|if|impl|import|in|includes|inject|inline|is|lazy|lend|let|literal|loop|macro|module|noinline|null|oper|out|pack|panic|preserve|prop|protected|purge|react|remember|requires|rescue|retain|return|scope|scoped|seal|solo|spec|take|test|then|threadlocal|throw|trace|true|try|typealias|union|unsafe|using|val|var|variant|when|where|while|with|without)\b/
 
 function codeOnly(source) {
   const chars = [...source]

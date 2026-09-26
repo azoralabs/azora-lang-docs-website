@@ -14,7 +14,7 @@ import { join, relative, basename, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const DOCS_VERSION = '0.0.4'
+const DOCS_VERSION = '0.1-dev'
 const STD_ROOT = join(__dirname, '..', 'azora-lang', 'std')
 
 // --- File Discovery ---
@@ -168,7 +168,7 @@ function parseDocComment(raw) {
 
 // --- Declaration Parsing ---
 
-const DECL_PATTERN = /^\s*(?:@\w+(?:\([^)]*\))?\s+)*(?:(?:expose|protect|protected|friend|shield|opaque|bridge|inline|deepinline|threadlocal|unsafe|use)\s+)*(func|pack|task|flow|prop|spec|fin|type|zone|enum|form|impl|deco|fail|slot|infx|hook)\b(.+)?/
+const DECL_PATTERN = /^\s*(?:@\w+(?:\([^)]*\))?\s+)*(?:(?:expose|protect|protected|friend|opaque|bridge|inline|deepinline|threadlocal|unsafe|use)\s+)*(func|pack|task|flow|prop|spec|fin|type|zone|enum|form|impl|deco|fail|slot|infx|hook)\b(.+)?/
 
 function isConfinedDeclarationLine(line) {
   return /^\s*(?:@\w+(?:\([^)]*\))?\s+)*confine\b/.test(line)
@@ -260,6 +260,14 @@ function declarationWithSignature(lines, index, declaration) {
     return declaration
   }
 
+  // Continuation lines keep their indentation, dedented by whatever the
+  // declaration itself is indented by. Trimming every line collapsed
+  // multi-line parameter lists flush against the left margin.
+  const baseIndent = lines[index].match(/^[ \t]*/)[0]
+  const dedent = (line) => (
+    line.startsWith(baseIndent) ? line.slice(baseIndent.length) : line.replace(/^[ \t]+/, '')
+  ).replace(/\s+$/, '')
+
   const signatureLines = [lines[index].trim()]
   let parenDepth = 0
   let inString = false
@@ -280,13 +288,13 @@ function declarationWithSignature(lines, index, declaration) {
   countParens(lines[index])
   let cursor = index + 1
   while (cursor < lines.length && parenDepth > 0) {
-    signatureLines.push(lines[cursor].trim())
+    signatureLines.push(dedent(lines[cursor]))
     countParens(lines[cursor])
     cursor++
   }
 
   while (cursor < lines.length && /^\s*where\b/.test(lines[cursor])) {
-    signatureLines.push(lines[cursor].trim())
+    signatureLines.push(dedent(lines[cursor]))
     if (lines[cursor].includes('{')) break
     cursor++
   }

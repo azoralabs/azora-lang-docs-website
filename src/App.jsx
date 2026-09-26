@@ -4,6 +4,7 @@ import Sidebar from './components/Sidebar'
 import DocPage from './components/DocPage'
 import ThemeToggle from './components/ThemeToggle'
 import docsData from '../docs-data.json'
+import { BookIcon, CodeIcon, DocsIcon, TerminalIcon } from './AzIcons.jsx'
 
 function useHash() {
   const [hash, setHash] = useState(() => window.location.hash.slice(1))
@@ -49,6 +50,12 @@ export default function App() {
           <span className="docs-brand__product">Standard Library</span>
           <span className="version-tag">v{docsData.version}</span>
         </div>
+        <nav className="az-topbar-links">
+          <a href="https://azoralang.org"><TerminalIcon />Language</a>
+          <a href="https://book.azoralang.org"><BookIcon />Book</a>
+          <a href="https://docs.azoralang.org"><DocsIcon />Docs</a>
+          <a href="https://code.azoralang.org"><CodeIcon />Playground</a>
+        </nav>
       </header>
 
       <div className="flex flex-1 overflow-hidden">

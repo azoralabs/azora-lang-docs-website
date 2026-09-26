@@ -79,7 +79,7 @@ export default function DocPage({ module: mod }) {
           {mod.package}
         </p>
         <p className="text-xs font-mono text-az-50 mb-3">
-          All members are inside <span className="text-pastel-purple">friend zone std</span>
+          All members are inside <span className="text-pastel-purple">std</span>
         </p>
         {mod.fileDoc && (
           <>
