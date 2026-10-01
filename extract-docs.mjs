@@ -14,7 +14,7 @@ import { join, relative, basename, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const DOCS_VERSION = '0.1-dev'
+const DOCS_VERSION = '0.1.0-dev'
 const STD_ROOT = join(__dirname, '..', 'azora-lang', 'std')
 
 // --- File Discovery ---
@@ -168,95 +168,38 @@ function parseDocComment(raw) {
 
 // --- Declaration Parsing ---
 
-const DECL_PATTERN = /^\s*(?:@\w+(?:\([^)]*\))?\s+)*(?:(?:expose|protect|protected|friend|opaque|bridge|inline|deepinline|threadlocal|unsafe|use)\s+)*(func|pack|task|flow|prop|spec|fin|type|zone|enum|form|impl|deco|fail|slot|infx|hook)\b(.+)?/
-
-function isConfinedDeclarationLine(line) {
-  return /^\s*(?:@\w+(?:\([^)]*\))?\s+)*confine\b/.test(line)
-}
+const DECL_PATTERN = /^\s*(?:@\w+(?:\([^)]*\))?\s+)*(?:(?:exposed|confined|protected|bridge|inline|deepinline|threadlocal|unsafe|async|react|solo|node|leaf|variant|scoped)\s+)*(func|pack|prop|spec|fin|val|var|let|typealias|scope|enum|impl|annot|error|union|oper|ctor|dtor|macro)\b(.*)/
 
 function parseDeclaration(line) {
-  if (isConfinedDeclarationLine(line)) return null
-
-  const m = line.match(DECL_PATTERN)
-  if (!m) return null
-
-  const kind = m[1]
-  const rest = (m[2] || '').trim()
-
+  const match = line.match(DECL_PATTERN)
+  if (!match) return null
+  const kind = match[1]
+  const rest = match[2].trim()
   let name = ''
-  let signature = line.trim()
-
-  switch (kind) {
-    case 'func':
-    case 'task':
-    case 'flow':
-    case 'infx':
-    case 'hook': {
-      const fnMatch = rest.match(/^(?:<[^>]+>\s+)?(\w+)/)
-      if (fnMatch) name = fnMatch[1]
-      signature = line.trim().replace(/\s*\{[\s\S]*$/, '').replace(/\s*=\s*[^{].*$/, (m) => m)
-      break
-    }
-    case 'pack':
-    case 'enum':
-    case 'form':
-    case 'deco':
-    case 'fail':
-    case 'slot': {
-      const typeMatch = rest.match(/^(?:<[^>]+>\s+)?(\w+)/)
-      if (typeMatch) name = typeMatch[1]
-      signature = line.trim().replace(/\s*\{[\s\S]*$/, '')
-      break
-    }
-    case 'spec': {
-      const specMatch = rest.match(/^(\w+)/)
-      if (specMatch) name = specMatch[1]
-      signature = line.trim().replace(/\s*\{[\s\S]*$/, '')
-      break
-    }
-    case 'prop': {
-      const propMatch = rest.match(/^(\w+)/)
-      if (propMatch) name = propMatch[1]
-      signature = line.trim().replace(/\s*\{[\s\S]*$/, '').replace(/\s*=\s*.*$/, (m) => m)
-      break
-    }
-    case 'fin': {
-      const finMatch = rest.match(/^(\w+)/)
-      if (finMatch) name = finMatch[1]
-      signature = line.trim()
-      break
-    }
-    case 'type': {
-      const typeMatch = rest.match(/^(\w+)/)
-      if (typeMatch) name = typeMatch[1]
-      signature = line.trim().replace(/\s*\{[\s\S]*$/, '')
-      break
-    }
-    case 'zone': {
-      const zoneMatch = rest.match(/^(\w+)/)
-      if (zoneMatch) name = zoneMatch[1]
-      signature = line.trim().replace(/\s*\{[\s\S]*$/, '')
-      break
-    }
-    case 'impl': {
-      // impl Spec for Type — spec implementation (show it)
-      // impl Type { ... } — method block (skip it)
-      const implForMatch = rest.match(/^(\w+)\s+for\s+(\w+)/)
-      if (implForMatch) {
-        name = `${implForMatch[1]} for ${implForMatch[2]}`
-        signature = line.trim().replace(/\s*\{[\s\S]*$/, '')
-      } else {
-        return null // skip impl blocks (method containers)
-      }
-      break
-    }
+  // Skip generic parameters and shorthand receivers before a callable's name.
+  if (['func', 'prop'].includes(kind)) {
+    name = rest.match(/^(?:<[^>]+>\s*)?(?:[&!]\s*\.\s*)?([A-Za-z_]\w*)/)?.[1] || ''
+    // Explicit typed receivers, such as `func Type&.member`.
+    const typed = rest.match(/^(?:<[^>]+>\s*)?[A-Za-z_]\w*(?:<[^>]+>)?[&!]\.([A-Za-z_]\w*)/)
+    if (typed) name = typed[1]
+  } else if (kind === 'oper') {
+    name = `oper${rest.match(/^(\S+)/)?.[1] || ''}`
+  } else if (kind === 'impl') {
+    name = rest.replace(/\s*\{.*$/, '').trim()
+  } else if (['ctor', 'dtor'].includes(kind)) {
+    name = kind
+  } else if (kind === 'macro') {
+    name = rest.match(/@([A-Za-z_]\w*[!?&*^]?)/)?.[1] || ''
+  } else {
+    name = rest.match(/^@?([A-Za-z_]\w*)/)?.[1] || ''
   }
-
+  if (!name || name.startsWith('_')) return null
+  const signature = line.trim().replace(/\s*\{[\s\S]*$/, '')
   return { kind, name, signature }
 }
 
 function declarationWithSignature(lines, index, declaration) {
-  if (!declaration || !['func', 'task', 'flow', 'infx', 'hook'].includes(declaration.kind)) {
+  if (!declaration || !['func', 'oper', 'ctor'].includes(declaration.kind)) {
     return declaration
   }
 
@@ -331,15 +274,15 @@ function extractModule(filePath) {
   const lines = source.split('\n')
 
   // `export module` has the same documented module identity as `module`.
-  const moduleMatch = source.match(/^\s*(?:export\s+)?module\s+([\w.]+)/m)
+  const moduleMatch = source.match(/^\s*(?:(?:exposed|confined)\s+)*module\s+([\w.]+)/m)
   const packageName = moduleMatch ? moduleMatch[1] : ''
 
   // Extract stability annotation
   let stability = 'unknown'
   let since = null
-  const stabMatch = source.match(/@file:(stable|experimental)(?:\(since:\s*"([^"]+)"\))?/)
+  const stabMatch = source.match(/@file:(Stable|Experimental)(?:\((?:sinceAzora|since):\s*"([^"]+)"\))?/i)
   if (stabMatch) {
-    stability = stabMatch[1]
+    stability = stabMatch[1].toLowerCase()
     since = stabMatch[2] || null
   }
 
@@ -361,14 +304,24 @@ function extractModule(filePath) {
 
   // Track brace depth and zone stack for nesting
   let braceDepth = 0
-  const zoneStack = [] // stack of { name, depth } for tracking which zone we're inside
+  const scopeStack = [] // stack of { name, depth } for tracking which zone we're inside
 
   let i = 0
   while (i < lines.length) {
     const line = lines[i]
 
+    // Private containers must not leak their otherwise public method names.
+    if (/^\s*(?:(?:bridge|inline|deepinline|async|react|variant|unsafe|solo|node|leaf)\s+)*(?:pack|impl|scope|func|prop)\s*(?:<[^>]+>\s*)?_[A-Za-z]\w*/.test(line)) {
+      let privateDepth = countBraces(line)
+      i++
+      while (i < lines.length && privateDepth > 0) {
+        privateDepth += countBraces(lines[i++])
+      }
+      continue
+    }
+
     // Determine current parent zone (not counting 'std')
-    const currentScope = zoneStack.length > 0 ? zoneStack[zoneStack.length - 1].name : null
+    const currentScope = scopeStack.length > 0 ? scopeStack[scopeStack.length - 1].name : null
 
     // Check for doc comment start
     if (line.trim().startsWith('/**')) {
@@ -404,19 +357,19 @@ function extractModule(filePath) {
         const decl = declarationWithSignature(lines, i, parseDeclaration(lines[i]))
         if (decl) {
           // Skip `friend zone std` — the top-level wrapper
-          if (decl.kind === 'zone' && decl.name === 'std' && lines[i].includes('friend')) {
+          if (['scope', 'impl'].includes(decl.kind) && decl.name === 'std' && lines[i].includes('friend')) {
             braceDepth += countBraces(lines[i])
             i++
             continue
           }
           // Track zone entry
-          if (decl.kind === 'zone') {
+          if (['scope', 'impl'].includes(decl.kind)) {
             const delta = countBraces(lines[i])
             braceDepth += delta
-            if (delta > 0) zoneStack.push({ name: decl.name, depth: braceDepth })
+            if (delta > 0) scopeStack.push({ name: decl.name, depth: braceDepth })
             declarations.push({ ...decl, doc, metadata: annotated.metadata, children: [] })
           } else {
-            declarations.push({ ...decl, doc, metadata: annotated.metadata, parentZone: currentScope })
+            declarations.push({ ...decl, doc, metadata: annotated.metadata, parentScope: currentScope })
             braceDepth += countBraces(lines[i])
           }
           i++
@@ -441,15 +394,15 @@ function extractModule(filePath) {
         const decl = declarationWithSignature(lines, i, parseDeclaration(declLine))
         if (decl && decl.name && !declLine.trim().startsWith('//')) {
           // Skip `friend zone std`
-          if (decl.kind === 'zone' && decl.name === 'std' && declLine.includes('friend')) {
+          if (['scope', 'impl'].includes(decl.kind) && decl.name === 'std' && declLine.includes('friend')) {
             i++
             continue
           }
-          if (decl.kind === 'zone') {
-            if (braceDepth > depthBefore) zoneStack.push({ name: decl.name, depth: braceDepth })
+          if (['scope', 'impl'].includes(decl.kind)) {
+            if (braceDepth > depthBefore) scopeStack.push({ name: decl.name, depth: braceDepth })
             declarations.push({ ...decl, doc: null, metadata: annotated.metadata, children: [] })
           } else {
-            declarations.push({ ...decl, doc: null, metadata: annotated.metadata, parentZone: currentScope })
+            declarations.push({ ...decl, doc: null, metadata: annotated.metadata, parentScope: currentScope })
           }
         }
       }
@@ -461,8 +414,8 @@ function extractModule(filePath) {
       braceDepth += countBraces(line)
 
       // Pop zone stack when we exit a scope block
-      while (zoneStack.length > 0 && braceDepth < zoneStack[zoneStack.length - 1].depth) {
-        zoneStack.pop()
+      while (scopeStack.length > 0 && braceDepth < scopeStack[scopeStack.length - 1].depth) {
+        scopeStack.pop()
       }
 
       // Check for undocumented declarations (only at valid depths, not inside function bodies)
@@ -470,16 +423,16 @@ function extractModule(filePath) {
         const decl = declarationWithSignature(lines, i, parseDeclaration(line))
         if (decl && decl.name && !line.trim().startsWith('//')) {
           // Skip `friend zone std`
-          if (decl.kind === 'zone' && decl.name === 'std' && line.includes('friend')) {
+          if (['scope', 'impl'].includes(decl.kind) && decl.name === 'std' && line.includes('friend')) {
             i++
             continue
           }
-          if (decl.kind === 'zone') {
+          if (['scope', 'impl'].includes(decl.kind)) {
             const delta = countBraces(line) - (braceDepth - depthBefore) // already counted
-            if (braceDepth > depthBefore) zoneStack.push({ name: decl.name, depth: braceDepth })
+            if (braceDepth > depthBefore) scopeStack.push({ name: decl.name, depth: braceDepth })
             declarations.push({ ...decl, doc: null, children: [] })
           } else {
-            declarations.push({ ...decl, doc: null, parentZone: currentScope })
+            declarations.push({ ...decl, doc: null, parentScope: currentScope })
           }
         }
       }
@@ -488,14 +441,14 @@ function extractModule(filePath) {
   }
 
   // Nest children into their parent zones
-  const zoneDecls = new Map()
+  const scopeDecls = new Map()
   for (const decl of declarations) {
-    if (decl.kind === 'zone') zoneDecls.set(decl.name, decl)
+    if (['scope', 'impl'].includes(decl.kind)) scopeDecls.set(decl.name, decl)
   }
   const topLevel = []
   for (const decl of declarations) {
-    if (decl.parentZone && zoneDecls.has(decl.parentZone)) {
-      zoneDecls.get(decl.parentZone).children.push(decl)
+    if (decl.parentScope && scopeDecls.has(decl.parentScope)) {
+      scopeDecls.get(decl.parentScope).children.push(decl)
     } else {
       topLevel.push(decl)
     }

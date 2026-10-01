@@ -16,7 +16,10 @@ const KIND_COLORS = {
   prop: 'bg-pastel-blue',
   fin: 'bg-pastel-green',
   type: 'bg-pastel-pink',
-  zone: 'bg-pastel-purple',
+  scope: 'bg-pastel-purple',
+  annot: 'bg-pastel-blue',
+  error: 'bg-pastel-red',
+  oper: 'bg-pastel-orange',
   impl: 'bg-pastel-red',
 }
 
@@ -34,7 +37,11 @@ const KIND_LABELS = {
   prop: 'prop',
   fin: 'const',
   type: 'type',
-  zone: 'zone',
+  scope: 'scope',
+  annot: 'annot',
+  error: 'error',
+  oper: 'oper',
+  typealias: 'typealias',
   impl: 'impl',
 }
 
@@ -131,7 +138,7 @@ export default function DeclCard({ decl }) {
   const [open, setOpen] = useState(true)
 
   // Scope with children — render as a container with nested members
-  if (kind === 'zone' && children?.length > 0) {
+  if (['scope', 'impl'].includes(kind) && children?.length > 0) {
     return (
       <div id={name} className="rounded-lg border border-az-75 overflow-hidden">
         <CardHeader kind={kind} name={name} open={open} onClick={() => setOpen(o => !o)} />

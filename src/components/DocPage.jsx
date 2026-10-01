@@ -1,25 +1,12 @@
 import { useState } from 'react'
 import DeclCard from './DeclCard'
 
-const KIND_ORDER = ['zone', 'fin', 'type', 'spec', 'impl', 'deco', 'pack', 'enum', 'slot', 'form', 'fail', 'prop', 'func', 'infx', 'hook', 'task', 'flow']
+const KIND_ORDER = ['scope', 'fin', 'val', 'var', 'let', 'typealias', 'spec', 'impl', 'annot', 'pack', 'enum', 'error', 'union', 'prop', 'oper', 'ctor', 'dtor', 'func', 'macro']
 const SECTION_LABELS = {
-  zone: 'Zones',
-  fin: 'Constants',
-  type: 'Type Functions',
-  spec: 'Specs',
-  pack: 'Packs',
-  enum: 'Enums',
-  slot: 'Slots',
-  form: 'Forms',
-  fail: 'Failures',
-  deco: 'Decorators',
-  prop: 'Properties',
-  func: 'Functions',
-  infx: 'Infix Functions',
-  hook: 'Hooks',
-  impl: 'Implementations',
-  task: 'Tasks',
-  flow: 'Flows',
+  scope: 'Scopes', fin: 'Constants', val: 'Values', var: 'Variables', let: 'Bindings',
+  typealias: 'Type aliases', spec: 'Specs', impl: 'Implementations', annot: 'Annotations',
+  pack: 'Packs', enum: 'Enums', error: 'Errors', union: 'Unions', prop: 'Properties',
+  oper: 'Operators', ctor: 'Constructors', dtor: 'Destructors', func: 'Functions', macro: 'Macros',
 }
 
 function CollapsibleSection({ label, count, children }) {
