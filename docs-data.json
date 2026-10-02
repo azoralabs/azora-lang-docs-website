@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-02T00:18:19.315Z",
+  "generated": "2026-10-02T18:10:52.188Z",
   "version": "0.1-dev",
   "modules": [
     {
@@ -791,7 +791,7 @@
             {
               "kind": "func",
               "name": "reset",
-              "signature": "func !.reset() scope self.",
+              "signature": "func !.reset()",
               "doc": {
                 "summary": "Resets the arena, freeing all allocations at once.",
                 "description": "After reset, the arena's full capacity is available again. All pointers obtained from previous allocations become invalid.",
@@ -812,7 +812,7 @@
             {
               "kind": "func",
               "name": "resetAll",
-              "signature": "func !.resetAll() scope self.",
+              "signature": "func !.resetAll()",
               "doc": {
                 "summary": "Resets the arena and zeroes the peak usage counter.",
                 "description": "",
@@ -1258,7 +1258,7 @@
             {
               "kind": "func",
               "name": "reset",
-              "signature": "func !.reset() scope self.",
+              "signature": "func !.reset()",
               "doc": {
                 "summary": "Resets the stack, freeing all allocations.",
                 "description": "",
@@ -1279,7 +1279,7 @@
             {
               "kind": "func",
               "name": "resetAll",
-              "signature": "func !.resetAll() scope self.",
+              "signature": "func !.resetAll()",
               "doc": {
                 "summary": "Resets the stack and clears peak tracking.",
                 "description": "",
@@ -3213,7 +3213,7 @@
         {
           "kind": "annot",
           "name": "UncheckedCast",
-          "signature": "bridge annot @UncheckedCast for [.Func, .AsyncFunc, .Prop, .AsyncProp, .Var, .Fin, .Oper]",
+          "signature": "bridge annot @UncheckedCast for (.Func, .AsyncFunc, .Prop, .AsyncProp, .Var, .Fin, .Oper)",
           "doc": null,
           "metadata": {
             "stability": "experimental",
@@ -3224,7 +3224,7 @@
         {
           "kind": "annot",
           "name": "SignatureOnly",
-          "signature": "bridge annot @SignatureOnly for [.Func, .AsyncFunc]",
+          "signature": "bridge annot @SignatureOnly for (.Func, .AsyncFunc)",
           "doc": {
             "summary": "Marks a function that may only be reached through a signature.",
             "description": "A function so marked is unreachable from the body of anything whose decorator is [DeclaresAccess]: what it hands back is asked for as a parameter instead. Acquiring something mid-body hides it from every reader of the signature, and from anything that decides - from signatures alone - which of two callers may run beside the other.",
@@ -3246,7 +3246,7 @@
         {
           "kind": "annot",
           "name": "ProvidesAccess",
-          "signature": "bridge annot @ProvidesAccess for [.Func, .AsyncFunc, .Prop]",
+          "signature": "bridge annot @ProvidesAccess for (.Func, .AsyncFunc, .Prop)",
           "doc": {
             "summary": "Marks a function that carries out access a parameter already declares.",
             "description": "The reach of a [DeclaresAccess] body stops here. A system asking for `shapes: @query […]` has declared what it touches; what the query does to serve that is the declaration being honoured, not access smuggled past it. Without this the walk would follow a declared parameter into its own implementation and refuse it there.",
@@ -13061,7 +13061,7 @@
         {
           "kind": "pack",
           "name": "Bool",
-          "signature": "bridge pack Bool derives (PartialEqual, Equal, Order, Hash)",
+          "signature": "bridge pack Bool",
           "doc": {
             "summary": "Boolean truth value: `true` or `false`, ordered `false < true`.",
             "description": "",
@@ -13356,8 +13356,8 @@
         },
         {
           "kind": "impl",
-          "name": "($name, U$name)",
-          "signature": "impl ($name, U$name)",
+          "name": "$name",
+          "signature": "impl $name",
           "doc": {
             "summary": "Storage size, shared by the width and its unsigned twin.",
             "description": "The widths double, so the size is the index: `Byte` is one byte and `Cent` is sixteen. @member sizeBytes Size in bytes. @member sizeBits Size in bits.",
@@ -13370,6 +13370,16 @@
               "file": null
             }
           },
+          "metadata": {
+            "since": "0.1"
+          },
+          "children": []
+        },
+        {
+          "kind": "impl",
+          "name": "U$name",
+          "signature": "impl U$name",
+          "doc": null,
           "metadata": {
             "since": "0.1"
           },
@@ -17694,7 +17704,7 @@
         {
           "kind": "annot",
           "name": "SerialName",
-          "signature": "annot @SerialName for [.Pack, .Enum, .Field]",
+          "signature": "annot @SerialName for (.Pack, .Enum, .Field)",
           "doc": {
             "summary": "Overrides the serialized name of a field or type.",
             "description": "",
@@ -17719,7 +17729,7 @@
           "signature": "fin value: String = \"\"",
           "doc": {
             "summary": "Name written to and read from the serialized representation.",
-            "description": "An empty value retains the declaration's source name. This makes the marker form usable in grouped decorator implementations while an explicit non-empty value performs an actual rename.",
+            "description": "An empty value retains the declaration's source name. This makes the marker form usable in decorator implementations while an explicit non-empty value performs an actual rename.",
             "tags": {
               "param": [],
               "generic": [],
