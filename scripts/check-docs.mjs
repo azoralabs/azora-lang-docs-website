@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises'
 
 const { version, modules } = JSON.parse(await readFile(new URL('../docs-data.json', import.meta.url)))
 const declarations = modules.flatMap(m => m.declarations.flatMap(d => [d, ...(d.children || [])]))
-assert.equal(version, '0.1.0-dev')
+assert.equal(version, '0.1-dev')
 assert.ok(modules.every(m => m.package.startsWith('std.')))
 assert.equal(new Set(modules.map(m => m.package)).size, modules.length)
 assert.ok(declarations.every(d => d.name && !d.name.startsWith('_')))

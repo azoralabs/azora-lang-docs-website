@@ -14,7 +14,7 @@ import { join, relative, basename, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const DOCS_VERSION = '0.1.0-dev'
+const DOCS_VERSION = '0.1-dev'
 const STD_ROOT = join(__dirname, '..', 'azora-lang', 'std')
 
 // --- File Discovery ---
